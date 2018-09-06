@@ -69,22 +69,22 @@ class LikelihoodBase : public BCModel {
    * Return the table of physics constants.
    * @return A pointer to the physics constants.
    */
-  KLFitter::PhysicsConstants* PhysicsConstants() { return &fPhysicsConstants; }
+  KLFitter::PhysicsConstants* PhysicsConstants() { return &m_physics_constants; }
 
   /// Return the detector.
-  KLFitter::DetectorBase* Detector() { return *fDetector; }
+  KLFitter::DetectorBase* Detector() { return *m_detector; }
 
   /// Return the set of measured particles.
-  KLFitter::ParticleCollection** PParticlesPermuted() { return fParticlesPermuted; }
+  KLFitter::ParticleCollection** PParticlesPermuted() { return m_particles_permuted; }
 
   /// Return the set of model particles.
   KLFitter::ParticleCollection* ParticlesModel() {
     BuildModelParticles();
-    return fParticlesModel.get();
+    return m_particles_model.get();
   }
 
   /// Return the number of model particles.
-  int NParticlesModel() { return static_cast<int>(fParticlesModel -> NParticles()); }
+  int NParticlesModel() { return static_cast<int>(m_particles_model -> NParticles()); }
 
   /// Return the number of parameters.
   int NParameters() { return this -> GetNParameters(); }
@@ -402,19 +402,19 @@ class LikelihoodBase : public BCModel {
   double SetPartonMass(double jetmass, double quarkmass, double *px, double *py, double *pz, double e);
 
   /// A pointer to the measured particles.
-  KLFitter::ParticleCollection** fParticlesPermuted;
+  KLFitter::ParticleCollection** m_particles_permuted;
 
   /// A pointer to the permutation object.
-  std::unique_ptr<KLFitter::Permutations>* fPermutations;
+  std::unique_ptr<KLFitter::Permutations>* m_permutations;
 
   /// A pointer to the model particles.
-  std::unique_ptr<KLFitter::ParticleCollection> fParticlesModel;
+  std::unique_ptr<KLFitter::ParticleCollection> m_particles_model;
 
   /// A pointer to the table of physics constants
-  KLFitter::PhysicsConstants fPhysicsConstants;
+  KLFitter::PhysicsConstants m_physics_constants;
 
   /// A pointer to the detector
-  KLFitter::DetectorBase** fDetector;
+  KLFitter::DetectorBase** m_detector;
 
   /// The event probabilities for the different permutations
   std::vector<double> fEventProbability;

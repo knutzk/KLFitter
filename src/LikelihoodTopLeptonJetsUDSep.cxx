@@ -51,40 +51,40 @@ LikelihoodTopLeptonJetsUDSep::~LikelihoodTopLeptonJetsUDSep() = default;
 // ---------------------------------------------------------
 int LikelihoodTopLeptonJetsUDSep::DefineModelParticles() {
   // create the particles of the model
-  fParticlesModel.reset(new ParticleCollection{});
+  m_particles_model.reset(new ParticleCollection{});
 
   // add model particles
   Particles::Parton parton0{"hadronic b quark", TLorentzVector{}};
   parton0.SetIdentifier(0);
   parton0.SetTrueFlavor(Particles::PartonTrueFlavor::kB);
-  fParticlesModel->AddParticle(parton0);
+  m_particles_model->AddParticle(parton0);
 
   Particles::Parton parton1{"leptonic b quark", TLorentzVector{}};
   parton1.SetIdentifier(1);
   parton1.SetTrueFlavor(Particles::PartonTrueFlavor::kB);
-  fParticlesModel->AddParticle(parton1);
+  m_particles_model->AddParticle(parton1);
 
   Particles::Parton parton2{"light quark 1", TLorentzVector{}};
   parton2.SetIdentifier(2);
   parton2.SetTrueFlavor(Particles::PartonTrueFlavor::kLightUp);
-  fParticlesModel->AddParticle(parton2);
+  m_particles_model->AddParticle(parton2);
 
   Particles::Parton parton3{"light quark 2", TLorentzVector{}};
   parton3.SetIdentifier(3);
   parton3.SetTrueFlavor(Particles::PartonTrueFlavor::kLightDown);
-  fParticlesModel->AddParticle(parton3);
+  m_particles_model->AddParticle(parton3);
 
   if (m_lepton_type == kElectron) {
-    fParticlesModel->AddParticle(Particles::Electron{"electron", TLorentzVector{}});
+    m_particles_model->AddParticle(Particles::Electron{"electron", TLorentzVector{}});
   } else if (m_lepton_type == kMuon) {
-    fParticlesModel->AddParticle(Particles::Muon{"muon", TLorentzVector{}});
+    m_particles_model->AddParticle(Particles::Muon{"muon", TLorentzVector{}});
   }
 
-  fParticlesModel->AddParticle(Particles::Neutrino{"neutrino", TLorentzVector{}});
-  fParticlesModel->AddParticle(Particles::Boson{"hadronic W", TLorentzVector{}});
-  fParticlesModel->AddParticle(Particles::Boson{"leptonic W", TLorentzVector{}});
-  fParticlesModel->AddParticle(Particles::Parton{"hadronic top", TLorentzVector{}});
-  fParticlesModel->AddParticle(Particles::Parton{"leptonic top", TLorentzVector{}});
+  m_particles_model->AddParticle(Particles::Neutrino{"neutrino", TLorentzVector{}});
+  m_particles_model->AddParticle(Particles::Boson{"hadronic W", TLorentzVector{}});
+  m_particles_model->AddParticle(Particles::Boson{"leptonic W", TLorentzVector{}});
+  m_particles_model->AddParticle(Particles::Parton{"hadronic top", TLorentzVector{}});
+  m_particles_model->AddParticle(Particles::Parton{"leptonic top", TLorentzVector{}});
 
   // no error
   return 1;
@@ -105,12 +105,12 @@ int LikelihoodTopLeptonJetsUDSep::RemoveInvariantParticlePermutations() {
   Particles::Type ptype = Particles::Type::kParton;
   std::vector<int> indexVector_Jets;
   // remove invariant jet permutations of all jets not considered
-  const ParticleCollection* particles = (*fPermutations)->Particles();
+  const ParticleCollection* particles = (*m_permutations)->Particles();
   indexVector_Jets.clear();
   for (size_t iPartons = 4; iPartons < particles->partons.size(); iPartons++) {
     indexVector_Jets.push_back(iPartons);
   }
-  err *= (*fPermutations)->InvariantParticlePermutations(ptype, indexVector_Jets);
+  err *= (*m_permutations)->InvariantParticlePermutations(ptype, indexVector_Jets);
 
   // remove the permutation from the other lepton
   if (m_lepton_type == kElectron) {
@@ -119,14 +119,14 @@ int LikelihoodTopLeptonJetsUDSep::RemoveInvariantParticlePermutations() {
     for (size_t iMuon = 0; iMuon < particles->muons.size(); iMuon++) {
       indexVector_Muons.push_back(iMuon);
     }
-    err *= (*fPermutations)->InvariantParticlePermutations(ptype, indexVector_Muons);
+    err *= (*m_permutations)->InvariantParticlePermutations(ptype, indexVector_Muons);
   } else if (m_lepton_type == kMuon) {
     ptype = Particles::Type::kElectron;
     std::vector<int> indexVector_Electrons;
     for (size_t iElectron = 0; iElectron < particles->electrons.size(); iElectron++) {
       indexVector_Electrons.push_back(iElectron);
     }
-    err *= (*fPermutations)->InvariantParticlePermutations(ptype, indexVector_Electrons);
+    err *= (*m_permutations)->InvariantParticlePermutations(ptype, indexVector_Electrons);
   }
 
   // return error code
@@ -169,30 +169,30 @@ double LikelihoodTopLeptonJetsUDSep::LogEventProbabilityLJetReweight() {
       return -1e99;
     }
 
-    for (size_t i = 0; i < fParticlesModel->partons.size(); ++i) {
+    for (size_t i = 0; i < m_particles_model->partons.size(); ++i) {
       // get index of corresponding measured particle.
 
-      int index = fParticlesModel->partons.at(i).GetIdentifier();
+      int index = m_particles_model->partons.at(i).GetIdentifier();
 
       if (index < 0) {
         continue;
       }
-      if (!((*fParticlesPermuted)->partons.at(index).GetBTagWeightIsSet())) {
+      if (!((*m_particles_permuted)->partons.at(index).GetBTagWeightIsSet())) {
         std::cout <<  " KLFitter::LikelihoodTopLeptonJetsUDSep::LogEventProbabilityLJetReweight() : bTag weight for particle was not set ! " << std::endl;
         return -1e99;
       }
-      Particles::PartonTrueFlavor trueFlavor = fParticlesModel->partons.at(i).GetTrueFlavor();
+      Particles::PartonTrueFlavor trueFlavor = m_particles_model->partons.at(i).GetTrueFlavor();
       if (trueFlavor == Particles::PartonTrueFlavor::kB) {
-        logprob += log(BJetPt((*fParticlesPermuted)->GetP4(Particles::Type::kParton, index)->Pt()));
-        logprob += log(BJetTagWeight((*fParticlesPermuted)->partons.at(index).GetBTagWeight()));
+        logprob += log(BJetPt((*m_particles_permuted)->GetP4(Particles::Type::kParton, index)->Pt()));
+        logprob += log(BJetTagWeight((*m_particles_permuted)->partons.at(index).GetBTagWeight()));
       }
       if (trueFlavor == Particles::PartonTrueFlavor::kLightUp) {
-        logprob += log(UpJetPt((*fParticlesPermuted)->GetP4(Particles::Type::kParton, index)->Pt()));
-        logprob += log(UpJetTagWeight((*fParticlesPermuted)->partons.at(index).GetBTagWeight()));
+        logprob += log(UpJetPt((*m_particles_permuted)->GetP4(Particles::Type::kParton, index)->Pt()));
+        logprob += log(UpJetTagWeight((*m_particles_permuted)->partons.at(index).GetBTagWeight()));
       }
       if (trueFlavor == Particles::PartonTrueFlavor::kLightDown) {
-        logprob += log(DownJetPt((*fParticlesPermuted)->GetP4(Particles::Type::kParton, index)->Pt()));
-        logprob += log(DownJetTagWeight((*fParticlesPermuted)->partons.at(index).GetBTagWeight()));
+        logprob += log(DownJetPt((*m_particles_permuted)->GetP4(Particles::Type::kParton, index)->Pt()));
+        logprob += log(DownJetTagWeight((*m_particles_permuted)->partons.at(index).GetBTagWeight()));
       }
     }
     return logprob;
@@ -204,27 +204,27 @@ double LikelihoodTopLeptonJetsUDSep::LogEventProbabilityLJetReweight() {
       return -1e99;
     }
 
-    for (size_t i = 0; i < fParticlesModel->partons.size(); ++i) {
+    for (size_t i = 0; i < m_particles_model->partons.size(); ++i) {
       // get index of corresponding measured particle.
 
-      int index = fParticlesModel->partons.at(i).GetIdentifier();
+      int index = m_particles_model->partons.at(i).GetIdentifier();
 
       if (index < 0) {
         continue;
       }
-      if (!((*fParticlesPermuted)->partons.at(index).GetBTagWeightIsSet())) {
+      if (!((*m_particles_permuted)->partons.at(index).GetBTagWeightIsSet())) {
         std::cout <<  " KLFitter::LikelihoodTopLeptonJetsUDSep::LogEventProbabilityLJetReweight() : bTag weight for particle was not set ! " << std::endl;
         return -1e99;
       }
-      Particles::PartonTrueFlavor trueFlavor = fParticlesModel->partons.at(i).GetTrueFlavor();
+      Particles::PartonTrueFlavor trueFlavor = m_particles_model->partons.at(i).GetTrueFlavor();
       if (trueFlavor == Particles::PartonTrueFlavor::kB) {
-        logprob += log(BJetProb((*fParticlesPermuted)->partons.at(index).GetBTagWeight(), (*fParticlesPermuted)->GetP4(Particles::Type::kParton, index)->Pt()));
+        logprob += log(BJetProb((*m_particles_permuted)->partons.at(index).GetBTagWeight(), (*m_particles_permuted)->GetP4(Particles::Type::kParton, index)->Pt()));
       }
       if (trueFlavor == Particles::PartonTrueFlavor::kLightUp) {
-        logprob += log(UpJetProb((*fParticlesPermuted)->partons.at(index).GetBTagWeight(), (*fParticlesPermuted)->GetP4(Particles::Type::kParton, index)->Pt()));
+        logprob += log(UpJetProb((*m_particles_permuted)->partons.at(index).GetBTagWeight(), (*m_particles_permuted)->GetP4(Particles::Type::kParton, index)->Pt()));
       }
       if (trueFlavor == Particles::PartonTrueFlavor::kLightDown) {
-        logprob += log(DownJetProb((*fParticlesPermuted)->partons.at(index).GetBTagWeight(), (*fParticlesPermuted)->GetP4(Particles::Type::kParton, index)->Pt()));
+        logprob += log(DownJetProb((*m_particles_permuted)->partons.at(index).GetBTagWeight(), (*m_particles_permuted)->GetP4(Particles::Type::kParton, index)->Pt()));
       }
     }
     return logprob;
@@ -245,14 +245,14 @@ double LikelihoodTopLeptonJetsUDSep::LogEventProbabilityBTag() {
   if (fBTagMethod == kVeto) {
     // loop over all model particles.  calculate the overall b-tagging
     // probability which is the product of all probabilities.
-    for (size_t i = 0; i < fParticlesModel->partons.size(); ++i) {
+    for (size_t i = 0; i < m_particles_model->partons.size(); ++i) {
       // get index of corresponding measured particle.
-      int index = fParticlesModel->partons.at(i).GetIdentifier();
+      int index = m_particles_model->partons.at(i).GetIdentifier();
       if (index < 0)
         continue;
 
-      Particles::PartonTrueFlavor trueFlavor = fParticlesModel->partons.at(i).GetTrueFlavor();
-      bool isBTagged = fParticlesModel->partons.at(i).GetIsBTagged();
+      Particles::PartonTrueFlavor trueFlavor = m_particles_model->partons.at(i).GetTrueFlavor();
+      bool isBTagged = m_particles_model->partons.at(i).GetIsBTagged();
       if (((trueFlavor == Particles::PartonTrueFlavor::kLightUp) || (trueFlavor == Particles::PartonTrueFlavor::kLightDown)) && isBTagged == true)
         probbtag = 0.;
     }
@@ -265,16 +265,16 @@ double LikelihoodTopLeptonJetsUDSep::LogEventProbabilityBTag() {
   } else if (fBTagMethod == kWorkingPoint) {
     // loop over all model particles.  calculate the overall b-tagging
     // probability which is the product of all probabilities.
-    for (size_t i = 0; i < fParticlesModel->partons.size(); ++i) {
+    for (size_t i = 0; i < m_particles_model->partons.size(); ++i) {
       // get index of corresponding measured particle.
-      int index = fParticlesModel->partons.at(i).GetIdentifier();
+      int index = m_particles_model->partons.at(i).GetIdentifier();
       if (index < 0)
         continue;
 
-      Particles::PartonTrueFlavor trueFlavor = fParticlesModel->partons.at(i).GetTrueFlavor();
-      bool isBTagged = fParticlesModel->partons.at(i).GetIsBTagged();
-      double efficiency = fParticlesModel->partons.at(i).GetBTagEfficiency();
-      double rejection = fParticlesModel->partons.at(i).GetBTagRejection();
+      Particles::PartonTrueFlavor trueFlavor = m_particles_model->partons.at(i).GetTrueFlavor();
+      bool isBTagged = m_particles_model->partons.at(i).GetIsBTagged();
+      double efficiency = m_particles_model->partons.at(i).GetBTagEfficiency();
+      double rejection = m_particles_model->partons.at(i).GetBTagRejection();
       if (rejection < 0 || efficiency < 0) {
         std::cout <<  " KLFitter::LikelihoodTopLeptonJetsUDSep::LogEventProbability() : Your working points are not set properly! Returning 0 probability " << std::endl;
         return -1e99;

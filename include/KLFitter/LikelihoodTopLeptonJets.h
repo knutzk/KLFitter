@@ -181,7 +181,7 @@ class LikelihoodTopLeptonJets : public LikelihoodBase {
 
   /**
    * Build the model particles from the best fit parameters. This sets the
-   * particles of #fParticlesModel to the fitted parameter values. The W boson
+   * particles of #m_particles_model to the fitted parameter values. The W boson
    * and top quark parameters are combined from the other particles.
    * @return An error code.
    */
@@ -208,7 +208,7 @@ class LikelihoodTopLeptonJets : public LikelihoodBase {
   std::vector<double> CalculateNeutrinoPzSolutions(TLorentzVector* additionalParticle = nullptr);
 
   /**
-   * Define the model particles. Create the object #fParticlesModel and add all
+   * Define the model particles. Create the object #m_particles_model and add all
    * particles of this likelihood. The 4-vector components are set to zero.
    * @return An error code.
    */
@@ -232,7 +232,7 @@ class LikelihoodTopLeptonJets : public LikelihoodBase {
 
   /**
    * Save permuted particles. This takes the permuted particles, stored in
-   * #fParticlesPermuted, and saves their values in the internal variables,
+   * #m_particles_permuted, and saves their values in the internal variables,
    * such as #m_bhad_meas_eta.
    * @return An error code.
    */
