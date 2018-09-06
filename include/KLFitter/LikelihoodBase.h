@@ -354,15 +354,15 @@ class LikelihoodBase : public BCModel {
   virtual int LHInvariantPermutationPartner(int /*iperm*/, int /*nperms*/, int* /*switchpar1*/, int* /*switchpar2*/) { return -1; }
 
   /**
-   * Write parameters from fCachedParametersVector.at(iperm) to
-   * fCachedParameters.
+   * Write parameters from m_cached_parameters_vector.at(iperm) to
+   * m_cached_parameters.
    * @param iperm Current permutation
    * @return An error code.
    */
   int GetParametersFromCache(int iperm);
 
   /**
-   * Write parameters to fCachedParametersVector.at(iperm) from
+   * Write parameters to m_cached_parameters_vector.at(iperm) from
    * GetBestFitParameter().
    * @param iperm Current permutation
    * @param nperms Number of permutations
@@ -435,22 +435,22 @@ class LikelihoodBase : public BCModel {
   BtaggingMethod m_btag_method;
 
   /// The cached parameters used for the current permutation
-  std::vector<double>  fCachedParameters;
+  std::vector<double>  m_cached_parameters;
 
   /// The cached parameter errors used for the current permutation
-  std::vector<double>  fCachedParameterErrors;
+  std::vector<double>  m_cached_parameter_errors;
 
   /// A vector of cached parameters, one for each permutation. Has to be set via fitter.
-  std::vector<std::vector<double> >  fCachedParametersVector;
+  std::vector<std::vector<double> >  m_cached_parameters_vector;
 
   /// A vector of cached parameter errors, one for each permutation. Has to be set via fitter.
-  std::vector<std::vector<double> >  fCachedParameterErrorsVector;
+  std::vector<std::vector<double> >  m_cached_parameter_errors_vector;
 
   /// The cached normalization, needed for the overloaded BCIntegrate::GetIntegral
-  double  fCachedNormalization;
+  double  m_cached_normalization;
 
   /// A vector of cached parameters, one for each permutation. Has to be set via fitter.
-  std::vector<double>  fCachedNormalizationVector;
+  std::vector<double>  m_cached_normalization_vector;
 };
 }  // namespace KLFitter
 
