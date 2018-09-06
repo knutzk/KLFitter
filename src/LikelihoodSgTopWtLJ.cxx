@@ -300,7 +300,7 @@ int KLFitter::LikelihoodSgTopWtLJ::AdjustParameterRanges() {
   // energy of b quark
   double E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->E();
   double m = m_physics_constants.MassBottom();
-  if (fFlagUseJetMass)
+  if (m_use_jet_mass)
     m = TMath::Max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->M());
   double Emin = TMath::Max(m, E - nsigmas_jet * sqrt(E));
   double Emax  = E + nsigmas_jet * sqrt(E);
@@ -309,7 +309,7 @@ int KLFitter::LikelihoodSgTopWtLJ::AdjustParameterRanges() {
   // energy of light quark 1
   E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->E();
   m = 0.001;
-  if (fFlagUseJetMass)
+  if (m_use_jet_mass)
     m = TMath::Max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->M());
   Emin = TMath::Max(m, E - nsigmas_jet * sqrt(E));
   Emax  = E + nsigmas_jet * sqrt(E);
@@ -318,7 +318,7 @@ int KLFitter::LikelihoodSgTopWtLJ::AdjustParameterRanges() {
   // energy of light quark2
   E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 2)->E();
   m = 0.001;
-  if (fFlagUseJetMass)
+  if (m_use_jet_mass)
     m = TMath::Max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 2)->M());
   Emin = TMath::Max(m, E - nsigmas_jet * sqrt(E));
   Emax  = E + nsigmas_jet * sqrt(E);
@@ -361,11 +361,11 @@ double KLFitter::LikelihoodSgTopWtLJ::LogLikelihood(const std::vector<double> & 
 
   // jet energy resolution terms
   logprob += log(fResEnergyB->p(b_fit_e, b_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   logprob += log(fResEnergyLQ1->p(lq1_fit_e, lq1_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   logprob += log(fResEnergyLQ2->p(lq2_fit_e, lq2_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // lepton energy resolution terms
   if (fTypeLepton == kElectron) {
@@ -373,13 +373,13 @@ double KLFitter::LikelihoodSgTopWtLJ::LogLikelihood(const std::vector<double> & 
   } else if (fTypeLepton == kMuon) {
     logprob += log(fResLepton->p(lep_fit_e* lep_meas_sintheta, lep_meas_pt, &TFgoodTmp));
   }
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // neutrino px and py
   logprob += log(fResMET->p(nu_fit_px, ETmiss_x, &TFgoodTmp, SumET));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   logprob += log(fResMET->p(nu_fit_py, ETmiss_y, &TFgoodTmp, SumET));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // physics constants
   double massW = m_physics_constants.MassW();

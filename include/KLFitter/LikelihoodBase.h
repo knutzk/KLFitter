@@ -104,9 +104,9 @@ class LikelihoodBase : public BCModel {
   double ParMax(int index);
 
   /// Get flag to use b-tagging or not.
-  BtaggingMethod GetBTagging() { return fBTagMethod;}
+  BtaggingMethod GetBTagging() { return m_btag_method;}
 
-  bool FlagIntegrate() { return fFlagIntegrate; }
+  bool FlagIntegrate() { return m_do_integrate; }
 
   /** @} */
   /** \name Member functions (Set)  */
@@ -179,7 +179,7 @@ class LikelihoodBase : public BCModel {
    * @param btagmethod The enum of btagging method.
    * @return An error flag.
    */
-  int SetBTagging(BtaggingMethod btagmethod) { fBTagMethod = btagmethod; return 1; }
+  int SetBTagging(BtaggingMethod btagmethod) { m_btag_method = btagmethod; return 1; }
 
   /**
    * THIS IS AN OUTDATED METHOD - JUST HERE FOR BACKWARD COMPATIBILITY.
@@ -189,7 +189,7 @@ class LikelihoodBase : public BCModel {
    */
   int SetFlagBTagging(bool flag) {
     std::cout << "LikelihoodBase::SetFlagBTagging(bool flag) is an outdated method - please use SetBTagging(BtaggingMethod btagmethod, double cutvalue, double btageff, double btagrej)." << std::endl;
-    fBTagMethod = flag ? kVeto : kNotag;
+    m_btag_method = flag ? kVeto : kNotag;
     return 1;
   }
 
@@ -199,26 +199,26 @@ class LikelihoodBase : public BCModel {
    * @param flag The flag.
    * @return An error flag.
    */
-  int SetFlagIsNan(bool flag) { fFlagIsNan = flag; return 1; }
+  int SetFlagIsNan(bool flag) { m_fit_is_nan = flag; return 1; }
 
   /**
    * Get flag FlagIsNan. This Flag should be true if Minuit gave
    * parameters with NaN values to LogLikelihood.
    */
-  bool GetFlagIsNan(void) { return fFlagIsNan; }
+  bool GetFlagIsNan(void) { return m_fit_is_nan; }
 
   /**
    * Set flag to integrate or not.
    * @param flag The flag.
    * @return An error flag.
    */
-  int SetFlagIntegrate(bool flag) { fFlagIntegrate = flag; return 1; }
+  int SetFlagIntegrate(bool flag) { m_do_integrate = flag; return 1; }
 
   /**
    * Set flag to use measured jet masses (true) instead of
    * parton masses (false);
    */
-  void SetFlagUseJetMass(bool flag) { fFlagUseJetMass = flag; }
+  void SetFlagUseJetMass(bool flag) { m_use_jet_mass = flag; }
 
   /** @} */
   /** \name Member functions (misc)  */
@@ -390,7 +390,7 @@ class LikelihoodBase : public BCModel {
   virtual int SaveResolutionFunctions() = 0;
 
   /**
-   * Set model parton mass according to fFlagUseJetMass.
+   * Set model parton mass according to m_use_jet_mass.
    * @param jetmass The jet mass.
    * @param quarkmass The quark mass.
    * @param px The parton px (will be modified, if necessary).
@@ -417,22 +417,22 @@ class LikelihoodBase : public BCModel {
   KLFitter::DetectorBase** m_detector;
 
   /// The event probabilities for the different permutations
-  std::vector<double> fEventProbability;
+  std::vector<double> m_event_probability;
 
   /// A flag to integrate over the likelihood or not
-  bool fFlagIntegrate;
+  bool m_do_integrate;
 
   /// A flag for knowing that Minuit gave parameters with NaN values to LogLikelihood
-  bool fFlagIsNan;
+  bool m_fit_is_nan;
 
   /// A flag for using the measured jet masses instead of parton masses
-  bool fFlagUseJetMass;
+  bool m_use_jet_mass;
 
   /// Global variable for TF problems.
-  bool fTFgood;
+  bool m_TFs_are_good;
 
   /// Name of btagging enum
-  BtaggingMethod fBTagMethod;
+  BtaggingMethod m_btag_method;
 
   /// The cached parameters used for the current permutation
   std::vector<double>  fCachedParameters;

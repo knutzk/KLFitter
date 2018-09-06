@@ -43,7 +43,7 @@ LikelihoodTwoTracks::LikelihoodTwoTracks()
   // define parameters
   this->DefineParameters();
 
-  fFlagIntegrate = 0;
+  m_do_integrate = 0;
 }
 
 // ---------------------------------------------------------

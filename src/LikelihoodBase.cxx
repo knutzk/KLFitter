@@ -36,12 +36,12 @@ KLFitter::LikelihoodBase::LikelihoodBase(ParticleCollection** particles)
   , m_particles_permuted(particles)
   , m_permutations(0)
   , m_detector(0)
-  , fEventProbability(std::vector<double>(0))
-  , fFlagIntegrate(0)
-  , fFlagIsNan(false)
-  , fFlagUseJetMass(false)
-  , fTFgood(true)
-  , fBTagMethod(kNotag) {
+  , m_event_probability(std::vector<double>(0))
+  , m_do_integrate(0)
+  , m_fit_is_nan(false)
+  , m_use_jet_mass(false)
+  , m_TFs_are_good(true)
+  , m_btag_method(kNotag) {
   BCLog::SetLogLevel(BCLog::nothing);
   MCMCSetRandomSeed(123456789);
 }
@@ -197,14 +197,14 @@ int KLFitter::LikelihoodBase::Initialize() {
 double KLFitter::LikelihoodBase::LogEventProbability() {
   double logprob = 0;
 
-  if (fBTagMethod != kNotag) {
+  if (m_btag_method != kNotag) {
     double logprobbtag = LogEventProbabilityBTag();
     if (logprobbtag <= -1e99) return -1e99;
     logprob += logprobbtag;
   }
 
   // use integrated value of LogLikelihood (default)
-  if (fFlagIntegrate) {
+  if (m_do_integrate) {
     logprob += log(GetIntegral());
   } else {
     logprob += LogLikelihood(GetBestFitParameters());
@@ -219,7 +219,7 @@ double KLFitter::LikelihoodBase::LogEventProbabilityBTag() {
 
   double probbtag = 1;
 
-  if (fBTagMethod == kVeto) {
+  if (m_btag_method == kVeto) {
     // loop over all model particles.  calculate the overall b-tagging
     // probability which is the product of all probabilities.
     for (size_t i = 0; i < m_particles_model->partons.size(); ++i) {
@@ -239,7 +239,7 @@ double KLFitter::LikelihoodBase::LogEventProbabilityBTag() {
     } else {
       return -1e99;
     }
-  } else if (fBTagMethod == kVetoLight) {
+  } else if (m_btag_method == kVetoLight) {
     // loop over all model particles.  calculate the overall b-tagging
     // probability which is the product of all probabilities.
     for (size_t i = 0; i < m_particles_model->partons.size(); ++i) {
@@ -259,7 +259,7 @@ double KLFitter::LikelihoodBase::LogEventProbabilityBTag() {
     } else {
       return -1e99;
     }
-  } else if (fBTagMethod == kVetoBoth) {
+  } else if (m_btag_method == kVetoBoth) {
     // loop over all model particles.  calculate the overall b-tagging
     // probability which is the product of all probabilities.
     for (size_t i = 0; i < m_particles_model->partons.size(); ++i) {
@@ -282,7 +282,7 @@ double KLFitter::LikelihoodBase::LogEventProbabilityBTag() {
     } else {
       return -1e99;
     }
-  } else if (fBTagMethod == kWorkingPoint) {
+  } else if (m_btag_method == kWorkingPoint) {
     for (size_t i = 0; i < m_particles_model->partons.size(); ++i) {
       // get index of corresponding measured particle.
       int index = m_particles_model->partons.at(i).GetIdentifier();
@@ -317,9 +317,9 @@ double KLFitter::LikelihoodBase::LogEventProbabilityBTag() {
 
 // ---------------------------------------------------------
 bool KLFitter::LikelihoodBase::NoTFProblem(std::vector<double> parameters) {
-  fTFgood = true;
+  m_TFs_are_good = true;
   this->LogLikelihood(parameters);
-  return fTFgood;
+  return m_TFs_are_good;
 }
 
 // ---------------------------------------------------------
@@ -366,7 +366,7 @@ int KLFitter::LikelihoodBase::RemoveForbiddenParticlePermutations() {
   int err = 1;
 
   // only in b-tagging type kVetoNoFit
-  if (!((fBTagMethod == kVetoNoFit) || (fBTagMethod == kVetoNoFitLight) || (fBTagMethod == kVetoNoFitBoth || (fBTagMethod == kVetoHybridNoFit))))
+  if (!((m_btag_method == kVetoNoFit) || (m_btag_method == kVetoNoFitLight) || (m_btag_method == kVetoNoFitBoth || (m_btag_method == kVetoHybridNoFit))))
     return err;
 
   // remove all permutations where a b-tagged jet is in the position of a model light quark
@@ -377,7 +377,7 @@ int KLFitter::LikelihoodBase::RemoveForbiddenParticlePermutations() {
   // with the kVetoNoFit option. If all permutations are vetoed, use the backup
   // Permutations object and run with the kVetoNoFitLight option.
   int nPartonsModel = m_particles_model->partons.size();
-  if (fBTagMethod == kVetoHybridNoFit) {
+  if (m_btag_method == kVetoHybridNoFit) {
     KLFitter::Permutations permutationsCopy(**m_permutations);
     for (int iParton(0); iParton < nPartons; ++iParton) {
       bool isBtagged = particles->partons.at(iParton).GetIsBTagged();
@@ -401,13 +401,13 @@ int KLFitter::LikelihoodBase::RemoveForbiddenParticlePermutations() {
 
     for (int iPartonModel(0); iPartonModel < nPartonsModel; ++iPartonModel) {
       Particles::PartonTrueFlavor trueFlavor = m_particles_model->partons.at(iPartonModel).GetTrueFlavor();
-      if ((fBTagMethod == kVetoHybridNoFit)&&((isBtagged) || (trueFlavor != Particles::PartonTrueFlavor::kB)))
+      if ((m_btag_method == kVetoHybridNoFit)&&((isBtagged) || (trueFlavor != Particles::PartonTrueFlavor::kB)))
         continue;
-      if ((fBTagMethod == kVetoNoFit)&&((!isBtagged) || (trueFlavor != Particles::PartonTrueFlavor::kLight)))
+      if ((m_btag_method == kVetoNoFit)&&((!isBtagged) || (trueFlavor != Particles::PartonTrueFlavor::kLight)))
         continue;
-      if ((fBTagMethod == kVetoNoFitLight)&&((isBtagged) || (trueFlavor != Particles::PartonTrueFlavor::kB)))
+      if ((m_btag_method == kVetoNoFitLight)&&((isBtagged) || (trueFlavor != Particles::PartonTrueFlavor::kB)))
         continue;
-      if ((fBTagMethod == kVetoNoFitBoth)&&(((isBtagged)&&(trueFlavor != Particles::PartonTrueFlavor::kLight)) || ((!isBtagged)&&(trueFlavor != Particles::PartonTrueFlavor::kB))))
+      if ((m_btag_method == kVetoNoFitBoth)&&(((isBtagged)&&(trueFlavor != Particles::PartonTrueFlavor::kLight)) || ((!isBtagged)&&(trueFlavor != Particles::PartonTrueFlavor::kB))))
         continue;
 
       err *= (*m_permutations)->RemoveParticlePermutations(Particles::Type::kParton, iParton, iPartonModel);
@@ -501,7 +501,7 @@ int KLFitter::LikelihoodBase::ResetCache() {
 // ---------------------------------------------------------.
 double KLFitter::LikelihoodBase::SetPartonMass(double jetmass, double quarkmass, double *px, double *py, double *pz, double e) {
   double mass(0.);
-  if (fFlagUseJetMass) {
+  if (m_use_jet_mass) {
     mass = jetmass > 0. ? jetmass : 0.;
   } else {
     mass = quarkmass;

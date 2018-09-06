@@ -182,7 +182,7 @@ int LikelihoodTopLeptonJets_JetAngles::AdjustParameterRanges() {
 
   double E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->E();
   double m = m_physics_constants.MassBottom();
-  if (fFlagUseJetMass) m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->M());
+  if (m_use_jet_mass) m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->M());
   double sigma = m_flag_get_par_sigmas_from_TFs ? m_res_energy_bhad->GetSigma(E) : sqrt(E);
   double Emin = std::max(m, E - nsigmas_jet* sigma);
   double Emax = E + nsigmas_jet* sigma;
@@ -190,7 +190,7 @@ int LikelihoodTopLeptonJets_JetAngles::AdjustParameterRanges() {
 
   E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->E();
   m = m_physics_constants.MassBottom();
-  if (fFlagUseJetMass) m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->M());
+  if (m_use_jet_mass) m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->M());
   sigma = m_flag_get_par_sigmas_from_TFs ? m_res_energy_blep->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
   Emax = E + nsigmas_jet* sigma;
@@ -198,7 +198,7 @@ int LikelihoodTopLeptonJets_JetAngles::AdjustParameterRanges() {
 
   E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 2)->E();
   m = 0.001;
-  if (fFlagUseJetMass) m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 2)->M());
+  if (m_use_jet_mass) m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 2)->M());
   sigma = m_flag_get_par_sigmas_from_TFs ? m_res_energy_lq1->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
   Emax = E + nsigmas_jet* sigma;
@@ -206,7 +206,7 @@ int LikelihoodTopLeptonJets_JetAngles::AdjustParameterRanges() {
 
   E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 3)->E();
   m = 0.001;
-  if (fFlagUseJetMass) m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 3)->M());
+  if (m_use_jet_mass) m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 3)->M());
   sigma = m_flag_get_par_sigmas_from_TFs ? m_res_energy_lq2->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
   Emax = E + nsigmas_jet* sigma;
@@ -307,16 +307,16 @@ double LikelihoodTopLeptonJets_JetAngles::LogLikelihood(const std::vector<double
 
   // jet energy resolution terms
   logprob += log(m_res_energy_bhad->p(m_bhad_fit_e, m_bhad_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   logprob += log(m_res_energy_blep->p(m_blep_fit_e, m_blep_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   logprob += log(m_res_energy_lq1->p(m_lq1_fit_e, m_lq1_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   logprob += log(m_res_energy_lq2->p(m_lq2_fit_e, m_lq2_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // lepton energy resolution terms
   if (m_lepton_type == kElectron) {
@@ -324,36 +324,36 @@ double LikelihoodTopLeptonJets_JetAngles::LogLikelihood(const std::vector<double
   } else if (m_lepton_type == kMuon) {
     logprob += log(m_res_lepton->p(m_lep_fit_e* m_lep_meas_sintheta, m_lep_meas_pt, &TFgoodTmp));
   }
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // neutrino px and py
   logprob += log(m_res_met->p(m_nu_fit_px, m_et_miss_x, &TFgoodTmp, m_et_miss_sum));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   logprob += log(m_res_met->p(m_nu_fit_py, m_et_miss_y, &TFgoodTmp, m_et_miss_sum));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // eta resolution
   logprob += log((*m_detector)->ResEtaBJet((*m_particles_permuted)->partons.at(0).GetDetEta())->p(parameters[parBhadEta], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->Eta(), &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   logprob += log((*m_detector)->ResEtaBJet((*m_particles_permuted)->partons.at(1).GetDetEta())->p(parameters[parBlepEta], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->Eta(), &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   logprob += log((*m_detector)->ResEtaLightJet((*m_particles_permuted)->partons.at(2).GetDetEta())->p(parameters[parLQ1Eta], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 2)->Eta(), &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   logprob += log((*m_detector)->ResEtaLightJet((*m_particles_permuted)->partons.at(3).GetDetEta())->p(parameters[parLQ2Eta], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 3)->Eta(), &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // transform all phi values, so that they are centered around zero, and not around the measured phi
 
   // phi resolution
   logprob += log((*m_detector)->ResPhiBJet((*m_particles_permuted)->partons.at(0).GetDetEta())->p(diffPhi(parameters[parBhadPhi], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->Phi()), 0., &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   logprob += log((*m_detector)->ResPhiBJet((*m_particles_permuted)->partons.at(1).GetDetEta())->p(diffPhi(parameters[parBlepPhi], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->Phi()), 0., &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   logprob += log((*m_detector)->ResPhiLightJet((*m_particles_permuted)->partons.at(2).GetDetEta())->p(diffPhi(parameters[parLQ1Phi], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 2)->Phi()), 0., &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   logprob += log((*m_detector)->ResPhiLightJet((*m_particles_permuted)->partons.at(3).GetDetEta())->p(diffPhi(parameters[parLQ2Phi], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 3)->Phi()), 0., &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // physics constants
   double massW = m_physics_constants.MassW();
@@ -437,16 +437,16 @@ std::vector<double> LikelihoodTopLeptonJets_JetAngles::LogLikelihoodComponents(s
 
   // jet energy resolution terms
   vecci.push_back(log(m_res_energy_bhad->p(m_bhad_fit_e, m_bhad_meas_e, &TFgoodTmp)));  // comp0
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   vecci.push_back(log(m_res_energy_blep->p(m_blep_fit_e, m_blep_meas_e, &TFgoodTmp)));  // comp1
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   vecci.push_back(log(m_res_energy_lq1->p(m_lq1_fit_e, m_lq1_meas_e, &TFgoodTmp)));  // comp2
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   vecci.push_back(log(m_res_energy_lq2->p(m_lq2_fit_e, m_lq2_meas_e, &TFgoodTmp)));  // comp3
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // lepton energy resolution terms
   if (m_lepton_type == kElectron) {
@@ -454,34 +454,34 @@ std::vector<double> LikelihoodTopLeptonJets_JetAngles::LogLikelihoodComponents(s
   } else if (m_lepton_type == kMuon) {
     vecci.push_back(log(m_res_lepton->p(m_lep_fit_e* m_lep_meas_sintheta, m_lep_meas_pt, &TFgoodTmp)));  // comp4
   }
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // neutrino px and py
   vecci.push_back(log(m_res_met->p(m_nu_fit_px, m_et_miss_x, &TFgoodTmp, m_et_miss_sum)));  // comp5
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   vecci.push_back(log(m_res_met->p(m_nu_fit_py, m_et_miss_y, &TFgoodTmp, m_et_miss_sum)));  // comp6
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // jet eta resolution terms
   vecci.push_back(log((*m_detector)->ResEtaBJet((*m_particles_permuted)->partons.at(0).GetDetEta())->p(parameters[parBhadEta], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->Eta(), &TFgoodTmp)));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   vecci.push_back(log((*m_detector)->ResEtaBJet((*m_particles_permuted)->partons.at(1).GetDetEta())->p(parameters[parBlepEta], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->Eta(), &TFgoodTmp)));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   vecci.push_back(log((*m_detector)->ResEtaLightJet((*m_particles_permuted)->partons.at(2).GetDetEta())->p(parameters[parLQ1Eta], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 2)->Eta(), &TFgoodTmp)));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   vecci.push_back(log((*m_detector)->ResEtaLightJet((*m_particles_permuted)->partons.at(3).GetDetEta())->p(parameters[parLQ2Eta], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 3)->Eta(), &TFgoodTmp)));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // jet phi resolution terms
   vecci.push_back(log((*m_detector)->ResPhiBJet((*m_particles_permuted)->partons.at(0).GetDetEta())->p(diffPhi(parameters[parBhadPhi], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->Phi()), 0., &TFgoodTmp)));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   vecci.push_back(log((*m_detector)->ResPhiBJet((*m_particles_permuted)->partons.at(1).GetDetEta())->p(diffPhi(parameters[parBlepPhi], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->Phi()), 0., &TFgoodTmp)));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   vecci.push_back(log((*m_detector)->ResPhiLightJet((*m_particles_permuted)->partons.at(2).GetDetEta())->p(diffPhi(parameters[parLQ1Phi], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 2)->Phi()), 0., &TFgoodTmp)));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
   vecci.push_back(log((*m_detector)->ResPhiLightJet((*m_particles_permuted)->partons.at(3).GetDetEta())->p(diffPhi(parameters[parLQ2Phi], (*m_particles_permuted)->GetP4(Particles::Type::kParton, 3)->Phi()), 0., &TFgoodTmp)));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // physics constants
   double massW = m_physics_constants.MassW();

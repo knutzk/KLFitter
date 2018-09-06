@@ -328,7 +328,7 @@ int KLFitter::LikelihoodTopDilepton::AdjustParameterRanges() {
 
   double E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->E();
   double m = m_physics_constants.MassBottom();
-  if (fFlagUseJetMass)
+  if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->M());
   double Emin = std::max(m, E - nsigmas_jet* sqrt(E));
   double Emax  = E + nsigmas_jet* sqrt(E);
@@ -336,7 +336,7 @@ int KLFitter::LikelihoodTopDilepton::AdjustParameterRanges() {
 
   E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->E();
   m = m_physics_constants.MassBottom();
-  if (fFlagUseJetMass)
+  if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->M());
   Emin = std::max(m, E - nsigmas_jet* sqrt(E));
   Emax  = E + nsigmas_jet* sqrt(E);
@@ -421,7 +421,7 @@ double KLFitter::LikelihoodTopDilepton::LogLikelihood(const std::vector<double> 
   } else {
     logweight += log(fResEnergyB1->p(b1_fit_e, b1_meas_e, &TFgoodTmp));
   }
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   if (logweight + 10 == logweight) std::cout << "TF b1 inf! : " << log(fResEnergyB1->p(b1_fit_e, b1_meas_e, &TFgoodTmp)) << std::endl;
 
@@ -431,7 +431,7 @@ double KLFitter::LikelihoodTopDilepton::LogLikelihood(const std::vector<double> 
   } else {
     logweight += log(fResEnergyB2->p(b2_fit_e, b2_meas_e, &TFgoodTmp));
   }
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   if (logweight + 10 == logweight) std::cout << "TF b2 inf! : " << log(fResEnergyB2->p(b2_fit_e, b2_meas_e, &TFgoodTmp)) << std::endl;
 
@@ -450,7 +450,7 @@ double KLFitter::LikelihoodTopDilepton::LogLikelihood(const std::vector<double> 
     } else {
       logweight += log(fResLepton2->p(lep2_fit_e*lep2_meas_sintheta, lep2_meas_pt, &TFgoodTmp));
     }
-    if (!TFgoodTmp) fTFgood = false;
+    if (!TFgoodTmp) m_TFs_are_good = false;
 
     if (logweight + 10 == logweight) std::cout << "TF lep emu inf! : "<< log(fResLepton1->p(lep1_fit_e, lep1_meas_e, &TFgoodTmp)) <<" and "<< log(fResLepton2->p(lep2_fit_e*lep2_meas_sintheta, lep2_meas_pt, &TFgoodTmp)) <<std::endl;
   } else if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kElectron) {
@@ -468,7 +468,7 @@ double KLFitter::LikelihoodTopDilepton::LogLikelihood(const std::vector<double> 
     } else {
       logweight += log(fResLepton2->p(lep2_fit_e, lep2_meas_e, &TFgoodTmp));
     }
-    if (!TFgoodTmp) fTFgood = false;
+    if (!TFgoodTmp) m_TFs_are_good = false;
 
     if (logweight + 10 == logweight) std::cout << "TF lep ee inf! : " << log(fResLepton1->p(lep1_fit_e, lep1_meas_e, &TFgoodTmp)) << " and " << log(fResLepton2->p(lep2_fit_e, lep2_meas_e, &TFgoodTmp)) << std::endl;
   } else if (fTypeLepton_1 == kMuon && fTypeLepton_2 == kMuon) {
@@ -486,7 +486,7 @@ double KLFitter::LikelihoodTopDilepton::LogLikelihood(const std::vector<double> 
     } else {
       logweight += log(fResLepton2->p(lep2_fit_e*lep2_meas_sintheta, lep2_meas_pt, &TFgoodTmp));
     }
-    if (!TFgoodTmp) fTFgood = false;
+    if (!TFgoodTmp) m_TFs_are_good = false;
 
     if (logweight + 10 == logweight) std::cout << "TF lep mumu inf! : " << log(fResLepton1->p(lep1_fit_e*lep1_meas_sintheta, lep1_meas_pt, &TFgoodTmp)) << " and " << log(fResLepton2->p(lep2_fit_e*lep2_meas_sintheta, lep2_meas_pt, &TFgoodTmp)) << std::endl;
   }
@@ -952,14 +952,14 @@ std::vector<double> KLFitter::LikelihoodTopDilepton::LogLikelihoodComponents(std
   } else {
     vecci.push_back(log(fResEnergyB1->p(b1_fit_e, b1_meas_e, &TFgoodTmp)));  // comp1
   }
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   if (fResEnergyB2->p(b2_fit_e, b2_meas_e, &TFgoodTmp) == 0.) {
     vecci.push_back(log(1e-99));
   } else {
     vecci.push_back(log(fResEnergyB2->p(b2_fit_e, b2_meas_e, &TFgoodTmp)));  // comp2
   }
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // lepton energy resolution terms
   if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kMuon) {
@@ -974,7 +974,7 @@ std::vector<double> KLFitter::LikelihoodTopDilepton::LogLikelihoodComponents(std
     } else {
       vecci.push_back(log(fResLepton2->p(lep2_fit_e* lep2_meas_sintheta, lep2_meas_pt, &TFgoodTmp)));  // comp4
     }
-    if (!TFgoodTmp) fTFgood = false;
+    if (!TFgoodTmp) m_TFs_are_good = false;
   } else if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kElectron) {
     if (fResLepton1->p(lep1_fit_e, lep1_meas_e, &TFgoodTmp) == 0.) {
       vecci.push_back(log(1e-99));
@@ -987,7 +987,7 @@ std::vector<double> KLFitter::LikelihoodTopDilepton::LogLikelihoodComponents(std
     } else {
       vecci.push_back(log(fResLepton2->p(lep2_fit_e, lep2_meas_e, &TFgoodTmp)));  // comp4
     }
-    if (!TFgoodTmp) fTFgood = false;
+    if (!TFgoodTmp) m_TFs_are_good = false;
   } else if (fTypeLepton_1 == kMuon && fTypeLepton_2 == kMuon) {
     if (fResLepton1->p(lep1_fit_e*lep1_meas_sintheta, lep1_meas_pt, &TFgoodTmp) == 0.) {
       vecci.push_back(log(1e-99));
@@ -1000,7 +1000,7 @@ std::vector<double> KLFitter::LikelihoodTopDilepton::LogLikelihoodComponents(std
     } else {
       vecci.push_back(log(fResLepton2->p(lep2_fit_e* lep2_meas_sintheta, lep2_meas_pt, &TFgoodTmp)));  // comp4
     }
-    if (!TFgoodTmp) fTFgood = false;
+    if (!TFgoodTmp) m_TFs_are_good = false;
   }
 
   // nueta and antinueta terms

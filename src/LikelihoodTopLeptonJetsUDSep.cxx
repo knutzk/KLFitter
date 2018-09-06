@@ -137,7 +137,7 @@ int LikelihoodTopLeptonJetsUDSep::RemoveInvariantParticlePermutations() {
 double LikelihoodTopLeptonJetsUDSep::LogEventProbability() {
   double logprob = 0;
 
-  if (fBTagMethod != kNotag) {
+  if (m_btag_method != kNotag) {
     double logprobbtag = LogEventProbabilityBTag();
     if (logprobbtag <= -1e99) return -1e99;
     logprob += logprobbtag;
@@ -149,7 +149,7 @@ double LikelihoodTopLeptonJetsUDSep::LogEventProbability() {
   }
 
   // use integrated value of LogLikelihood (default)
-  if (fFlagIntegrate) {
+  if (m_do_integrate) {
     logprob += log(GetIntegral());
   } else {
     logprob += LogLikelihood(GetBestFitParameters());
@@ -242,7 +242,7 @@ double LikelihoodTopLeptonJetsUDSep::LogEventProbabilityBTag() {
 
   double probbtag = 1;
 
-  if (fBTagMethod == kVeto) {
+  if (m_btag_method == kVeto) {
     // loop over all model particles.  calculate the overall b-tagging
     // probability which is the product of all probabilities.
     for (size_t i = 0; i < m_particles_model->partons.size(); ++i) {
@@ -262,7 +262,7 @@ double LikelihoodTopLeptonJetsUDSep::LogEventProbabilityBTag() {
     } else {
       return -1e99;
     }
-  } else if (fBTagMethod == kWorkingPoint) {
+  } else if (m_btag_method == kWorkingPoint) {
     // loop over all model particles.  calculate the overall b-tagging
     // probability which is the product of all probabilities.
     for (size_t i = 0; i < m_particles_model->partons.size(); ++i) {

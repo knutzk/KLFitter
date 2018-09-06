@@ -246,7 +246,7 @@ int KLFitter::LikelihoodTopAllHadronic::AdjustParameterRanges() {
 
   double E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->E();
   double m = m_physics_constants.MassBottom();
-  if (fFlagUseJetMass)
+  if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->M());
   double sigma = fFlagGetParSigmasFromTFs ? fResEnergyBhad1->GetSigma(E) : sqrt(E);
   double Emin = std::max(m, E - nsigmas_jet* sigma);
@@ -255,7 +255,7 @@ int KLFitter::LikelihoodTopAllHadronic::AdjustParameterRanges() {
 
   E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->E();
   m = m_physics_constants.MassBottom();
-  if (fFlagUseJetMass)
+  if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->M());
   sigma = fFlagGetParSigmasFromTFs ? fResEnergyBhad2->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
@@ -264,7 +264,7 @@ int KLFitter::LikelihoodTopAllHadronic::AdjustParameterRanges() {
 
   E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 2)->E();
   m = 0.001;
-  if (fFlagUseJetMass)
+  if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 2)->M());
   sigma = fFlagGetParSigmasFromTFs ? fResEnergyLQ1->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
@@ -273,7 +273,7 @@ int KLFitter::LikelihoodTopAllHadronic::AdjustParameterRanges() {
 
   E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 3)->E();
   m = 0.001;
-  if (fFlagUseJetMass)
+  if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 3)->M());
   sigma = fFlagGetParSigmasFromTFs ? fResEnergyLQ2->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
@@ -282,7 +282,7 @@ int KLFitter::LikelihoodTopAllHadronic::AdjustParameterRanges() {
 
   E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 4)->E();
   m = 0.001;
-  if (fFlagUseJetMass)
+  if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 4)->M());
   sigma = fFlagGetParSigmasFromTFs ? fResEnergyLQ3->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
@@ -291,7 +291,7 @@ int KLFitter::LikelihoodTopAllHadronic::AdjustParameterRanges() {
 
   E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 5)->E();
   m = 0.001;
-  if (fFlagUseJetMass)
+  if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 5)->M());
   sigma = fFlagGetParSigmasFromTFs ? fResEnergyLQ4->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
@@ -324,22 +324,22 @@ double KLFitter::LikelihoodTopAllHadronic::LogLikelihood(const std::vector<doubl
 
   // jet energy resolution terms
   logprob += log(fResEnergyBhad1->p(bhad1_fit_e, bhad1_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   logprob += log(fResEnergyBhad2->p(bhad2_fit_e, bhad2_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   logprob += log(fResEnergyLQ1->p(lq1_fit_e, lq1_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   logprob += log(fResEnergyLQ2->p(lq2_fit_e, lq2_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   logprob += log(fResEnergyLQ3->p(lq3_fit_e, lq3_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   logprob += log(fResEnergyLQ4->p(lq4_fit_e, lq4_meas_e, &TFgoodTmp));
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // physics constants
   double massW = m_physics_constants.MassW();
@@ -502,22 +502,22 @@ std::vector<double> KLFitter::LikelihoodTopAllHadronic::LogLikelihoodComponents(
 
   // jet energy resolution terms
   vecci.push_back(log(fResEnergyBhad1->p(bhad1_fit_e, bhad1_meas_e, &TFgoodTmp)));  // comp0
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   vecci.push_back(log(fResEnergyBhad2->p(bhad2_fit_e, bhad2_meas_e, &TFgoodTmp)));  // comp1
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   vecci.push_back(log(fResEnergyLQ1->p(lq1_fit_e, lq1_meas_e, &TFgoodTmp)));  // comp2
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   vecci.push_back(log(fResEnergyLQ2->p(lq2_fit_e, lq2_meas_e, &TFgoodTmp)));  // comp3
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   vecci.push_back(log(fResEnergyLQ3->p(lq3_fit_e, lq3_meas_e, &TFgoodTmp)));  // comp4
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   vecci.push_back(log(fResEnergyLQ4->p(lq4_fit_e, lq4_meas_e, &TFgoodTmp)));  // comp5
-  if (!TFgoodTmp) fTFgood = false;
+  if (!TFgoodTmp) m_TFs_are_good = false;
 
   // physics constants
   double massW = m_physics_constants.MassW();
