@@ -79,7 +79,7 @@ class LikelihoodTopDilepton : public KLFitter::LikelihoodBase {
    * fixed to the pole mass.
    * @param flag The flag.
    */
-  void SetFlagTopMassFixed(bool flag) { fFlagTopMassFixed = flag; }
+  void SetFlagTopMassFixed(bool flag) { m_flag_top_mass_fixed = flag; }
 
   /**
    * Set the neutrino pseudorapidity sigma linear dependency on mtop
@@ -231,22 +231,22 @@ class LikelihoodTopDilepton : public KLFitter::LikelihoodBase {
   /** @{ */
 
   /// A flag for using a fixed top mass (true) or not (false).
-  bool fFlagTopMassFixed;
+  bool m_flag_top_mass_fixed;
 
   /// The values of the x component of the missing ET.
-  double ETmiss_x;
+  double m_et_miss_x;
 
   /// The values of the y component of the missing ET.
-  double ETmiss_y;
+  double m_et_miss_y;
 
   /// The values of the total scalar ET.
-  double SumET;
+  double m_et_miss_sum;
 
   /// Lepton 1 Type (electron or muon)
-  LeptonType fTypeLepton_1;
+  LeptonType m_lepton_type_1;
 
   /// Lepton 2 Type (electron or muon)
-  LeptonType fTypeLepton_2;
+  LeptonType m_lepton_type_2;
 
   /**
    * vector including nu pseudorapidity sigma

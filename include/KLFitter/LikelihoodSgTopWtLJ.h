@@ -168,16 +168,16 @@ class LikelihoodSgTopWtLJ : public KLFitter::LikelihoodBase {
   bool fHadronicTop;
 
   /// The values of the x component of the missing ET.
-  double ETmiss_x;
+  double m_et_miss_x;
 
   /// The values of the y component of the missing ET.
-  double ETmiss_y;
+  double m_et_miss_y;
 
   /// The values of the total scalar ET.
-  double SumET;
+  double m_et_miss_sum;
 
   /// Index whether l+jets event is electron (1) or muon (2).
-  int fTypeLepton;
+  int m_lepton_type;
 
   /// Pointer to resolution function for the b quark.
   ResolutionBase * fResEnergyB;

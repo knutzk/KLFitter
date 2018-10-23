@@ -35,8 +35,8 @@
 // ---------------------------------------------------------
 KLFitter::LikelihoodTopAllHadronic::LikelihoodTopAllHadronic()
   : KLFitter::LikelihoodBase::LikelihoodBase()
-  , fFlagTopMassFixed(false)
-  , fFlagGetParSigmasFromTFs(false) {
+  , m_flag_top_mass_fixed(false)
+  , m_flag_get_par_sigmas_from_TFs(false) {
   // define model particles
   DefineModelParticles();
 
@@ -242,13 +242,13 @@ int KLFitter::LikelihoodTopAllHadronic::RemoveInvariantParticlePermutations() {
 // ---------------------------------------------------------
 int KLFitter::LikelihoodTopAllHadronic::AdjustParameterRanges() {
   // adjust limits
-  double nsigmas_jet = fFlagGetParSigmasFromTFs ? 10 : 7;
+  double nsigmas_jet = m_flag_get_par_sigmas_from_TFs ? 10 : 7;
 
   double E = (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->E();
   double m = m_physics_constants.MassBottom();
   if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 0)->M());
-  double sigma = fFlagGetParSigmasFromTFs ? fResEnergyBhad1->GetSigma(E) : sqrt(E);
+  double sigma = m_flag_get_par_sigmas_from_TFs ? fResEnergyBhad1->GetSigma(E) : sqrt(E);
   double Emin = std::max(m, E - nsigmas_jet* sigma);
   double Emax  = E + nsigmas_jet* sigma;
   SetParameterRange(parBhad1E, Emin, Emax);
@@ -257,7 +257,7 @@ int KLFitter::LikelihoodTopAllHadronic::AdjustParameterRanges() {
   m = m_physics_constants.MassBottom();
   if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 1)->M());
-  sigma = fFlagGetParSigmasFromTFs ? fResEnergyBhad2->GetSigma(E) : sqrt(E);
+  sigma = m_flag_get_par_sigmas_from_TFs ? fResEnergyBhad2->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
   Emax  = E + nsigmas_jet* sigma;
   SetParameterRange(parBhad2E, Emin, Emax);
@@ -266,7 +266,7 @@ int KLFitter::LikelihoodTopAllHadronic::AdjustParameterRanges() {
   m = 0.001;
   if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 2)->M());
-  sigma = fFlagGetParSigmasFromTFs ? fResEnergyLQ1->GetSigma(E) : sqrt(E);
+  sigma = m_flag_get_par_sigmas_from_TFs ? fResEnergyLQ1->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
   Emax  = E + nsigmas_jet* sigma;
   SetParameterRange(parLQ1E, Emin, Emax);
@@ -275,7 +275,7 @@ int KLFitter::LikelihoodTopAllHadronic::AdjustParameterRanges() {
   m = 0.001;
   if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 3)->M());
-  sigma = fFlagGetParSigmasFromTFs ? fResEnergyLQ2->GetSigma(E) : sqrt(E);
+  sigma = m_flag_get_par_sigmas_from_TFs ? fResEnergyLQ2->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
   Emax  = E + nsigmas_jet* sigma;
   SetParameterRange(parLQ2E, Emin, Emax);
@@ -284,7 +284,7 @@ int KLFitter::LikelihoodTopAllHadronic::AdjustParameterRanges() {
   m = 0.001;
   if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 4)->M());
-  sigma = fFlagGetParSigmasFromTFs ? fResEnergyLQ3->GetSigma(E) : sqrt(E);
+  sigma = m_flag_get_par_sigmas_from_TFs ? fResEnergyLQ3->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
   Emax  = E + nsigmas_jet* sigma;
   SetParameterRange(parLQ3E, Emin, Emax);
@@ -293,12 +293,12 @@ int KLFitter::LikelihoodTopAllHadronic::AdjustParameterRanges() {
   m = 0.001;
   if (m_use_jet_mass)
     m = std::max(0.0, (*m_particles_permuted)->GetP4(Particles::Type::kParton, 5)->M());
-  sigma = fFlagGetParSigmasFromTFs ? fResEnergyLQ4->GetSigma(E) : sqrt(E);
+  sigma = m_flag_get_par_sigmas_from_TFs ? fResEnergyLQ4->GetSigma(E) : sqrt(E);
   Emin = std::max(m, E - nsigmas_jet* sigma);
   Emax  = E + nsigmas_jet* sigma;
   SetParameterRange(parLQ4E, Emin, Emax);
 
-  if (fFlagTopMassFixed)
+  if (m_flag_top_mass_fixed)
     SetParameterRange(parTopM, m_physics_constants.MassTop(), m_physics_constants.MassTop());
 
   // no error

@@ -205,11 +205,11 @@ taken from the LHC top mass combination´s uncertainty, and the allowed paramete
 range is set to 3 times this LHC uncertainty:
 
 ```c++
-if (fFlagTopMassFixed) {
+if (m_flag_top_mass_fixed) {
   SetPriorGauss(0, m_physics_constants.MassTop(), m_physics_constants.MassTopUnc());
 }
 
-if (fFlagTopMassFixed) {
+if (m_flag_top_mass_fixed) {
   SetParameterRange(parTopM, m_physics_constants.MassTop() - 3 * m_physics_constants.MassTopUnc(), m_physics_constants.MassTop() + 3 * m_physics_constants.MassTopUnc());
 }
 ```

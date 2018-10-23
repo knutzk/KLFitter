@@ -65,9 +65,9 @@ class LikelihoodTopAllHadronic : public KLFitter::LikelihoodBase {
    * fixed to the pole mass.
    * @param flag The flag.
    */
-  void SetFlagTopMassFixed(bool flag) { fFlagTopMassFixed = flag; }
+  void SetFlagTopMassFixed(bool flag) { m_flag_top_mass_fixed = flag; }
 
-  void SetFlagGetParSigmasFromTFs(bool flag) { fFlagGetParSigmasFromTFs = flag; }
+  void SetFlagGetParSigmasFromTFs(bool flag) { m_flag_get_par_sigmas_from_TFs = flag; }
 
   /** @} */
   /** \name Member functions (BAT)  */
@@ -147,10 +147,10 @@ class LikelihoodTopAllHadronic : public KLFitter::LikelihoodBase {
   /** @{ */
 
   /// A flag for using a fixed top mass (true) or not (false).
-  bool fFlagTopMassFixed;
+  bool m_flag_top_mass_fixed;
 
   ///  Flag for using ResolutionBase::GetSigma() to retrieve the parameter ranges
-  bool fFlagGetParSigmasFromTFs;
+  bool m_flag_get_par_sigmas_from_TFs;
 
   /// Pointer to resolution function for hadronic b quark.
   ResolutionBase * fResEnergyBhad1;

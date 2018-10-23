@@ -47,12 +47,12 @@ public:
 // ---------------------------------------------------------
 KLFitter::LikelihoodTopDilepton::LikelihoodTopDilepton()
   : KLFitter::LikelihoodBase::LikelihoodBase()
-  , fFlagTopMassFixed(false)
-  , ETmiss_x(0.)
-  , ETmiss_y(0.)
-  , SumET(0.)
-  , fTypeLepton_1(kElectron)
-  , fTypeLepton_2(kElectron)
+  , m_flag_top_mass_fixed(false)
+  , m_et_miss_x(0.)
+  , m_et_miss_y(0.)
+  , m_et_miss_sum(0.)
+  , m_lepton_type_1(kElectron)
+  , m_lepton_type_2(kElectron)
   , nueta_params(0.)
   , doSumloglik(false)
   , hist_mttbar(new TH1D())
@@ -75,9 +75,9 @@ KLFitter::LikelihoodTopDilepton::~LikelihoodTopDilepton() = default;
 // ---------------------------------------------------------
 int KLFitter::LikelihoodTopDilepton::SetET_miss_XY_SumET(double etx, double ety, double sumet) {
   // set missing ET x and y component and the SumET
-  ETmiss_x = etx;
-  ETmiss_y = ety;
-  SumET = sumet;
+  m_et_miss_x = etx;
+  m_et_miss_y = ety;
+  m_et_miss_sum = sumet;
 
   // no error
   return 1;
@@ -96,11 +96,11 @@ void KLFitter::LikelihoodTopDilepton::RequestResolutionFunctions() {
 void KLFitter::LikelihoodTopDilepton::SetLeptonType(LeptonType leptontype_1, LeptonType leptontype_2) {
   if ((leptontype_1 != kElectron && leptontype_1 != kMuon) || (leptontype_2 != kElectron && leptontype_2 != kMuon)) {
     std::cout << "KLFitter::SetLeptonTyp(). Warning: lepton type not defined. Set electron-electron as lepton type." << std::endl;
-    fTypeLepton_1 = kElectron;
-    fTypeLepton_2 = kElectron;
+    m_lepton_type_1 = kElectron;
+    m_lepton_type_2 = kElectron;
   } else {
-    fTypeLepton_1 = leptontype_1;
-    fTypeLepton_2 = leptontype_2;
+    m_lepton_type_1 = leptontype_1;
+    m_lepton_type_2 = leptontype_2;
   }
 
   // define model particles
@@ -145,13 +145,13 @@ int KLFitter::LikelihoodTopDilepton::DefineModelParticles() {
   parton1.SetTrueFlavor(Particles::PartonTrueFlavor::kB);
   m_particles_model->AddParticle(parton1);
 
-  if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kMuon) {
+  if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kMuon) {
     m_particles_model->AddParticle(Particles::Electron{"electron", TLorentzVector{}});
     m_particles_model->AddParticle(Particles::Muon{"muon", TLorentzVector{}});
-  } else if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kElectron) {
+  } else if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kElectron) {
     m_particles_model->AddParticle(Particles::Electron{"electron 1", TLorentzVector{}});
     m_particles_model->AddParticle(Particles::Electron{"electron 2", TLorentzVector{}});
-  } else if (fTypeLepton_1 == kMuon && fTypeLepton_2 == kMuon) {
+  } else if (m_lepton_type_1 == kMuon && m_lepton_type_2 == kMuon) {
     m_particles_model->AddParticle(Particles::Muon{"muon 1", TLorentzVector{}});
     m_particles_model->AddParticle(Particles::Muon{"muon 2", TLorentzVector{}});
   }
@@ -176,7 +176,7 @@ void KLFitter::LikelihoodTopDilepton::DefineParameters() {
 // ---------------------------------------------------------
 void KLFitter::LikelihoodTopDilepton::DefinePrior() {
   // define sharp Gaussian prior for mtop
-  if (fFlagTopMassFixed)
+  if (m_flag_top_mass_fixed)
     SetPriorGauss(0, m_physics_constants.MassTop(), m_physics_constants.MassTopUnc());
 }
 
@@ -184,11 +184,11 @@ void KLFitter::LikelihoodTopDilepton::DefinePrior() {
 void KLFitter::LikelihoodTopDilepton::DefineHistograms() {
   const char *channel = 0;
 
-  if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kMuon) {
+  if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kMuon) {
     channel = "emu";
-  } else if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kElectron) {
+  } else if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kElectron) {
     channel = "ee";
-  } else if (fTypeLepton_1 == kMuon && fTypeLepton_2 == kMuon) {
+  } else if (m_lepton_type_1 == kMuon && m_lepton_type_2 == kMuon) {
     channel = "mumu";
   }
 
@@ -276,14 +276,14 @@ int KLFitter::LikelihoodTopDilepton::RemoveInvariantParticlePermutations() {
   err *= (*m_permutations)->InvariantParticlePermutations(ptype, indexVector_Jets);
 
   // remove lepton permutations within the same kind
-  if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kElectron) {
+  if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kElectron) {
     ptype = Particles::Type::kElectron;
     std::vector<int> indexVector_Electrons;
     for (size_t iElectron = 0; iElectron < particles->electrons.size(); iElectron++) {
       indexVector_Electrons.push_back(iElectron);
     }
     err *= (*m_permutations)->InvariantParticlePermutations(ptype, indexVector_Electrons);
-  } else if (fTypeLepton_1 == kMuon && fTypeLepton_2 == kMuon) {
+  } else if (m_lepton_type_1 == kMuon && m_lepton_type_2 == kMuon) {
     ptype = Particles::Type::kMuon;
     std::vector<int> indexVector_Muons;
     for (size_t iMuon = 0; iMuon < particles->muons.size(); iMuon++) {
@@ -308,7 +308,7 @@ int KLFitter::LikelihoodTopDilepton::RemoveInvariantParticlePermutations() {
 // ---------------------------------------------------------
 int KLFitter::LikelihoodTopDilepton::AdjustParameterRanges() {
   // adjust limits
-  if (fFlagTopMassFixed)
+  if (m_flag_top_mass_fixed)
     SetParameterRange(parTopM, m_physics_constants.MassTop()-3*m_physics_constants.MassTopUnc(), m_physics_constants.MassTop()+3*m_physics_constants.MassTopUnc());
 
   double nsigmas_jet = 7.0;
@@ -342,7 +342,7 @@ int KLFitter::LikelihoodTopDilepton::AdjustParameterRanges() {
   Emax  = E + nsigmas_jet* sqrt(E);
   SetParameterRange(parB2E, Emin, Emax);
 
-  if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kMuon) {
+  if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kMuon) {
     E = (*m_particles_permuted)->GetP4(Particles::Type::kElectron, 0)->E();
     double sigrange = nsigmas_lepton*std::max(par2_1*sqrt(E), par3_1*E);
     Emin = std::max(0.001, E - sigrange);
@@ -355,7 +355,7 @@ int KLFitter::LikelihoodTopDilepton::AdjustParameterRanges() {
     Emin = std::max(0.001, E -sigrange);
     Emax = E +sigrange;
     SetParameterRange(parLep2E, Emin, Emax);
-  } else if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kElectron) {
+  } else if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kElectron) {
     E = (*m_particles_permuted)->GetP4(Particles::Type::kElectron, 0)->E();
     double sigrange = nsigmas_lepton*std::max(par2_1*sqrt(E), par3_1*E);
     Emin = std::max(0.001, E - sigrange);
@@ -367,7 +367,7 @@ int KLFitter::LikelihoodTopDilepton::AdjustParameterRanges() {
     Emin = std::max(0.001, E - sigrange);
     Emax  = E + sigrange;
     SetParameterRange(parLep2E, Emin, Emax);
-  } else if (fTypeLepton_1 == kMuon && fTypeLepton_2 == kMuon) {
+  } else if (m_lepton_type_1 == kMuon && m_lepton_type_2 == kMuon) {
     E = (*m_particles_permuted)->GetP4(Particles::Type::kMuon, 0)->E();
     double sintheta = sin((*m_particles_permuted)->GetP4(Particles::Type::kMuon, 0)->Theta());
     double sigrange = nsigmas_lepton*std::max(par2_1*E, par3_1*E*E*sintheta);
@@ -436,7 +436,7 @@ double KLFitter::LikelihoodTopDilepton::LogLikelihood(const std::vector<double> 
   if (logweight + 10 == logweight) std::cout << "TF b2 inf! : " << log(fResEnergyB2->p(b2_fit_e, b2_meas_e, &TFgoodTmp)) << std::endl;
 
   // lepton energy resolution terms EM
-  if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kMuon) {
+  if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kMuon) {
     if (fResLepton1->p(lep1_fit_e, lep1_meas_e, &TFgoodTmp) == 0.) {
       logweight = log(1e-99);
       return logweight;
@@ -453,7 +453,7 @@ double KLFitter::LikelihoodTopDilepton::LogLikelihood(const std::vector<double> 
     if (!TFgoodTmp) m_TFs_are_good = false;
 
     if (logweight + 10 == logweight) std::cout << "TF lep emu inf! : "<< log(fResLepton1->p(lep1_fit_e, lep1_meas_e, &TFgoodTmp)) <<" and "<< log(fResLepton2->p(lep2_fit_e*lep2_meas_sintheta, lep2_meas_pt, &TFgoodTmp)) <<std::endl;
-  } else if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kElectron) {
+  } else if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kElectron) {
     // lepton energy resolution terms EE
     if (fResLepton1->p(lep1_fit_e, lep1_meas_e, &TFgoodTmp) == 0.) {
       logweight = log(1e-99);
@@ -471,7 +471,7 @@ double KLFitter::LikelihoodTopDilepton::LogLikelihood(const std::vector<double> 
     if (!TFgoodTmp) m_TFs_are_good = false;
 
     if (logweight + 10 == logweight) std::cout << "TF lep ee inf! : " << log(fResLepton1->p(lep1_fit_e, lep1_meas_e, &TFgoodTmp)) << " and " << log(fResLepton2->p(lep2_fit_e, lep2_meas_e, &TFgoodTmp)) << std::endl;
-  } else if (fTypeLepton_1 == kMuon && fTypeLepton_2 == kMuon) {
+  } else if (m_lepton_type_1 == kMuon && m_lepton_type_2 == kMuon) {
     // lepton energy resolution terms MM
     if (fResLepton1->p(lep1_fit_e*lep1_meas_sintheta, lep1_meas_pt, &TFgoodTmp) == 0.) {
       logweight = log(1e-99);
@@ -774,11 +774,11 @@ double KLFitter::LikelihoodTopDilepton::neutrino_weight(TLorentzVector nu, TLore
   static double dy;
 
   // MET resolution in terms of SumET
-  sigmaX = fResMET->GetSigma(SumET);
-  sigmaY = fResMET->GetSigma(SumET);
+  sigmaX = fResMET->GetSigma(m_et_miss_sum);
+  sigmaY = fResMET->GetSigma(m_et_miss_sum);
 
-  dx = ETmiss_x-nu.Px()-nubar.Px();  // check!!
-  dy = ETmiss_y-nu.Py()-nubar.Py();  // check!!
+  dx = m_et_miss_x-nu.Px()-nubar.Px();  // check!!
+  dy = m_et_miss_y-nu.Py()-nubar.Py();  // check!!
 
   return exp(-dx*dx/(2.*sigmaX*sigmaX)  - dy*dy/(2.*sigmaY*sigmaY));
 }
@@ -795,13 +795,13 @@ std::vector<double> KLFitter::LikelihoodTopDilepton::GetInitialParameters() {
   values[parB2E] = b2_meas_e;
 
   // energy of the lepton
-  if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kMuon) {
+  if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kMuon) {
     values[parLep1E] = (*m_particles_permuted)->GetP4(Particles::Type::kElectron, 0)->E();
     values[parLep2E] = (*m_particles_permuted)->GetP4(Particles::Type::kMuon, 0)->E();
-  } else if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kElectron) {
+  } else if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kElectron) {
     values[parLep1E] = (*m_particles_permuted)->GetP4(Particles::Type::kElectron, 0)->E();
     values[parLep2E] = (*m_particles_permuted)->GetP4(Particles::Type::kElectron, 1)->E();
-  } else if (fTypeLepton_1 == kMuon && fTypeLepton_2 == kMuon) {
+  } else if (m_lepton_type_1 == kMuon && m_lepton_type_2 == kMuon) {
     values[parLep1E] = (*m_particles_permuted)->GetP4(Particles::Type::kMuon, 0)->E();
     values[parLep2E] = (*m_particles_permuted)->GetP4(Particles::Type::kMuon, 1)->E();
   }
@@ -833,21 +833,21 @@ int KLFitter::LikelihoodTopDilepton::SavePermutedParticles() {
   TLorentzVector * lepton_1(0);
   TLorentzVector * lepton_2(0);
 
-  if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kMuon) {
+  if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kMuon) {
     lepton_1 = (*m_particles_permuted)->GetP4(Particles::Type::kElectron, 0);
     lep1_meas_deteta = (*m_particles_permuted)->electrons.at(0).GetDetEta();
     lep1_meas_charge = (*m_particles_permuted)->electrons.at(0).GetCharge();
     lepton_2 = (*m_particles_permuted)->GetP4(Particles::Type::kMuon, 0);
     lep2_meas_deteta = (*m_particles_permuted)->muons.at(0).GetDetEta();
     lep2_meas_charge = (*m_particles_permuted)->muons.at(0).GetCharge();
-  } else if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kElectron) {
+  } else if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kElectron) {
     lepton_1 = (*m_particles_permuted)->GetP4(Particles::Type::kElectron, 0);
     lep1_meas_deteta = (*m_particles_permuted)->electrons.at(0).GetDetEta();
     lep1_meas_charge = (*m_particles_permuted)->electrons.at(0).GetCharge();
     lepton_2 = (*m_particles_permuted)->GetP4(Particles::Type::kElectron, 1);
     lep2_meas_deteta = (*m_particles_permuted)->electrons.at(1).GetDetEta();
     lep2_meas_charge = (*m_particles_permuted)->electrons.at(1).GetCharge();
-  } else if (fTypeLepton_1 == kMuon && fTypeLepton_2 == kMuon) {
+  } else if (m_lepton_type_1 == kMuon && m_lepton_type_2 == kMuon) {
     lepton_1 = (*m_particles_permuted)->GetP4(Particles::Type::kMuon, 0);
     lep1_meas_deteta = (*m_particles_permuted)->muons.at(0).GetDetEta();
     lep1_meas_charge = (*m_particles_permuted)->muons.at(0).GetCharge();
@@ -879,13 +879,13 @@ int KLFitter::LikelihoodTopDilepton::SaveResolutionFunctions() {
   fResEnergyB1 = (*m_detector)->ResEnergyBJet(b1_meas_deteta);
   fResEnergyB2 = (*m_detector)->ResEnergyBJet(b2_meas_deteta);
 
-  if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kMuon) {
+  if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kMuon) {
     fResLepton1 = (*m_detector)->ResEnergyElectron(lep1_meas_deteta);
     fResLepton2 = (*m_detector)->ResEnergyMuon(lep2_meas_deteta);
-  } else if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kElectron) {
+  } else if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kElectron) {
     fResLepton1 = (*m_detector)->ResEnergyElectron(lep1_meas_deteta);
     fResLepton2 = (*m_detector)->ResEnergyElectron(lep2_meas_deteta);
-  } else if (fTypeLepton_1 == kMuon && fTypeLepton_2 == kMuon) {
+  } else if (m_lepton_type_1 == kMuon && m_lepton_type_2 == kMuon) {
     fResLepton1 = (*m_detector)->ResEnergyMuon(lep1_meas_deteta);
     fResLepton2 = (*m_detector)->ResEnergyMuon(lep2_meas_deteta);
   }
@@ -905,10 +905,10 @@ int KLFitter::LikelihoodTopDilepton::BuildModelParticles() {
   TLorentzVector * lep1(0);
   TLorentzVector * lep2(0);
 
-  if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kMuon) {
+  if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kMuon) {
     lep1  = m_particles_model->GetP4(Particles::Type::kElectron, 0);
     lep2  = m_particles_model->GetP4(Particles::Type::kMuon, 0);
-  } else if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kElectron) {
+  } else if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kElectron) {
     lep1  = m_particles_model->GetP4(Particles::Type::kElectron, 0);
     lep2  = m_particles_model->GetP4(Particles::Type::kElectron, 1);
   } else {
@@ -962,7 +962,7 @@ std::vector<double> KLFitter::LikelihoodTopDilepton::LogLikelihoodComponents(std
   if (!TFgoodTmp) m_TFs_are_good = false;
 
   // lepton energy resolution terms
-  if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kMuon) {
+  if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kMuon) {
     if (fResLepton1->p(lep1_fit_e, lep1_meas_e, &TFgoodTmp) == 0.) {
       vecci.push_back(log(1e-99));
     } else {
@@ -975,7 +975,7 @@ std::vector<double> KLFitter::LikelihoodTopDilepton::LogLikelihoodComponents(std
       vecci.push_back(log(fResLepton2->p(lep2_fit_e* lep2_meas_sintheta, lep2_meas_pt, &TFgoodTmp)));  // comp4
     }
     if (!TFgoodTmp) m_TFs_are_good = false;
-  } else if (fTypeLepton_1 == kElectron && fTypeLepton_2 == kElectron) {
+  } else if (m_lepton_type_1 == kElectron && m_lepton_type_2 == kElectron) {
     if (fResLepton1->p(lep1_fit_e, lep1_meas_e, &TFgoodTmp) == 0.) {
       vecci.push_back(log(1e-99));
     } else {
@@ -988,7 +988,7 @@ std::vector<double> KLFitter::LikelihoodTopDilepton::LogLikelihoodComponents(std
       vecci.push_back(log(fResLepton2->p(lep2_fit_e, lep2_meas_e, &TFgoodTmp)));  // comp4
     }
     if (!TFgoodTmp) m_TFs_are_good = false;
-  } else if (fTypeLepton_1 == kMuon && fTypeLepton_2 == kMuon) {
+  } else if (m_lepton_type_1 == kMuon && m_lepton_type_2 == kMuon) {
     if (fResLepton1->p(lep1_fit_e*lep1_meas_sintheta, lep1_meas_pt, &TFgoodTmp) == 0.) {
       vecci.push_back(log(1e-99));
     } else {

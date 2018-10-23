@@ -86,9 +86,9 @@ class LikelihoodTTZTrilepton : public KLFitter::LikelihoodBase {
    * fixed to the pole mass.
    * @param flag The flag.
    */
-  void SetFlagTopMassFixed(bool flag) { fFlagTopMassFixed = flag; }
+  void SetFlagTopMassFixed(bool flag) { m_flag_top_mass_fixed = flag; }
 
-  void SetFlagGetParSigmasFromTFs(bool flag) { fFlagGetParSigmasFromTFs = flag; }
+  void SetFlagGetParSigmasFromTFs(bool flag) { m_flag_get_par_sigmas_from_TFs = flag; }
 
   /// Set the type of lepton according to LeptonType.
   void SetLeptonType(LeptonType leptontype);
@@ -230,22 +230,22 @@ class LikelihoodTTZTrilepton : public KLFitter::LikelihoodBase {
   /** @{ */
 
   /// A flag for using a fixed top mass (true) or not (false).
-  bool fFlagTopMassFixed;
+  bool m_flag_top_mass_fixed;
 
   ///  Flag for using ResolutionBase::GetSigma() to retrieve the parameter ranges
-  bool fFlagGetParSigmasFromTFs;
+  bool m_flag_get_par_sigmas_from_TFs;
 
   /// The values of the x component of the missing ET.
-  double ETmiss_x;
+  double m_et_miss_x;
 
   /// The values of the y component of the missing ET.
-  double ETmiss_y;
+  double m_et_miss_y;
 
   /// The values of the total scalar ET.
-  double SumET;
+  double m_et_miss_sum;
 
   /// Index whether l+jets event is electron (1) or muon (2).
-  LeptonType fTypeLepton;
+  LeptonType m_lepton_type;
 
   /// Cut-off value for the 1/E^2 distribution (in GeV).
   double fInvMassCutoff;

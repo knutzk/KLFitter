@@ -72,7 +72,7 @@ class LikelihoodTTHLeptonJets : public KLFitter::LikelihoodBase {
    * fixed to the pole mass.
    * @param flag The flag.
    */
-  void SetFlagTopMassFixed(bool flag) { fFlagTopMassFixed = flag; }
+  void SetFlagTopMassFixed(bool flag) { m_flag_top_mass_fixed = flag; }
 
   /// Set a flag. If flag is true the invariant Higgs mass is fixed
   void SetFlagHiggsMassFixed(bool flag) { fFlagHiggsMassFixed = flag; }
@@ -193,22 +193,22 @@ class LikelihoodTTHLeptonJets : public KLFitter::LikelihoodBase {
   /** @{ */
 
   /// A flag for using a fixed top mass (true) or not (false).
-  bool fFlagTopMassFixed;
+  bool m_flag_top_mass_fixed;
 
   /// A flag for using a fixed Higgs mass (true) or not (false).
   bool fFlagHiggsMassFixed;
 
   /// The values of the x component of the missing ET.
-  double ETmiss_x;
+  double m_et_miss_x;
 
   /// The values of the y component of the missing ET.
-  double ETmiss_y;
+  double m_et_miss_y;
 
   /// The values of the total scalar ET.
-  double SumET;
+  double m_et_miss_sum;
 
   /// Index whether l+jets event is electron (1) or muon (2).
-  LeptonType fTypeLepton;
+  LeptonType m_lepton_type;
 
   /// Pointer to resolution function for hadronic b quark.
   ResolutionBase * fResEnergyBhad;

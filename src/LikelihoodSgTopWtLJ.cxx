@@ -35,10 +35,10 @@
 KLFitter::LikelihoodSgTopWtLJ::LikelihoodSgTopWtLJ()
   : KLFitter::LikelihoodBase::LikelihoodBase()
   , fHadronicTop(true)
-  , ETmiss_x(0.)
-  , ETmiss_y(0.)
-  , SumET(0.)
-  , fTypeLepton(kElectron) {
+  , m_et_miss_x(0.)
+  , m_et_miss_y(0.)
+  , m_et_miss_sum(0.)
+  , m_lepton_type(kElectron) {
   // define model particles
   this->DefineModelParticles();
 
@@ -56,12 +56,12 @@ TLorentzVector* KLFitter::LikelihoodSgTopWtLJ::GetLepton(KLFitter::ParticleColle
     return 0;
   }
   TLorentzVector* lepton = 0;
-  if (fTypeLepton == kElectron) {
+  if (m_lepton_type == kElectron) {
     lepton = particles->GetP4(Particles::Type::kElectron, 0);
-  } else if (fTypeLepton == kMuon) {
+  } else if (m_lepton_type == kMuon) {
     lepton = particles->GetP4(Particles::Type::kMuon, 0);
   } else {
-    std::cout << "KLFitter::LikelihoodSgTopWtLJ::GetLepton():\tERROR\tInvalid letpon type: " << fTypeLepton << std::endl;
+    std::cout << "KLFitter::LikelihoodSgTopWtLJ::GetLepton():\tERROR\tInvalid letpon type: " << m_lepton_type << std::endl;
   }
 
   return lepton;
@@ -69,15 +69,15 @@ TLorentzVector* KLFitter::LikelihoodSgTopWtLJ::GetLepton(KLFitter::ParticleColle
 
 // ---------------------------------------------------------
 int KLFitter::LikelihoodSgTopWtLJ::GetLeptonType() {
-  return fTypeLepton;
+  return m_lepton_type;
 }
 
 // ---------------------------------------------------------
 int KLFitter::LikelihoodSgTopWtLJ::SetET_miss_XY_SumET(double etx, double ety, double sumet) {
   // set missing ET x and y component and the SumET
-  ETmiss_x = etx;
-  ETmiss_y = ety;
-  SumET = sumet;
+  m_et_miss_x = etx;
+  m_et_miss_y = ety;
+  m_et_miss_sum = sumet;
 
   // no error
   return 1;
@@ -96,9 +96,9 @@ void KLFitter::LikelihoodSgTopWtLJ::RequestResolutionFunctions() {
 void KLFitter::LikelihoodSgTopWtLJ::SetLeptonType(int leptontype) {
   if (leptontype != kElectron && leptontype != kMuon) {
     std::cout << "KLFitter::SetLeptonType()\tWARNING\t lepton type not defined: " << leptontype << ". Set electron as lepton type." << std::endl;
-    fTypeLepton = kElectron;
+    m_lepton_type = kElectron;
   } else {
-    fTypeLepton = leptontype;
+    m_lepton_type = leptontype;
   }
 
   // define model particles
@@ -125,9 +125,9 @@ int KLFitter::LikelihoodSgTopWtLJ::DefineModelParticles() {
   parton2.SetTrueFlavor(Particles::PartonTrueFlavor::kLight);
   m_particles_model->AddParticle(parton2);
 
-  if (fTypeLepton == kElectron) {
+  if (m_lepton_type == kElectron) {
     m_particles_model->AddParticle(Particles::Electron{"electron", TLorentzVector{}});
-  } else if (fTypeLepton == kMuon) {
+  } else if (m_lepton_type == kMuon) {
     m_particles_model->AddParticle(Particles::Muon{"muon", TLorentzVector{}});
   }
 
@@ -325,11 +325,11 @@ int KLFitter::LikelihoodSgTopWtLJ::AdjustParameterRanges() {
   SetParameterRange(parLQ2E, Emin, Emax);
 
   // energy of lepton
-  if (fTypeLepton == kElectron) {
+  if (m_lepton_type == kElectron) {
     E = (*m_particles_permuted)->GetP4(Particles::Type::kElectron, 0)->E();
     Emin = TMath::Max(0.001, E - nsigmas_lepton * sqrt(E));
     Emax = E + nsigmas_lepton * sqrt(E);
-  } else if (fTypeLepton == kMuon) {
+  } else if (m_lepton_type == kMuon) {
     E = (*m_particles_permuted)->GetP4(Particles::Type::kMuon, 0)->E();
     double sintheta = sin((*m_particles_permuted)->GetP4(Particles::Type::kMuon, 0)->Theta());
     double sigrange = nsigmas_lepton * (E * E * sintheta);
@@ -341,8 +341,8 @@ int KLFitter::LikelihoodSgTopWtLJ::AdjustParameterRanges() {
   // note: this is hard-coded in the momement
 
   // missing ET
-  SetParameterRange(parNuPx, ETmiss_x-100.0, ETmiss_x+100);
-  SetParameterRange(parNuPy, ETmiss_y-100.0, ETmiss_y+100);
+  SetParameterRange(parNuPx, m_et_miss_x-100.0, m_et_miss_x+100);
+  SetParameterRange(parNuPy, m_et_miss_y-100.0, m_et_miss_y+100);
 
   // no error
   return 1;
@@ -368,17 +368,17 @@ double KLFitter::LikelihoodSgTopWtLJ::LogLikelihood(const std::vector<double> & 
   if (!TFgoodTmp) m_TFs_are_good = false;
 
   // lepton energy resolution terms
-  if (fTypeLepton == kElectron) {
+  if (m_lepton_type == kElectron) {
     logprob += log(fResLepton->p(lep_fit_e, lep_meas_e, &TFgoodTmp));
-  } else if (fTypeLepton == kMuon) {
+  } else if (m_lepton_type == kMuon) {
     logprob += log(fResLepton->p(lep_fit_e* lep_meas_sintheta, lep_meas_pt, &TFgoodTmp));
   }
   if (!TFgoodTmp) m_TFs_are_good = false;
 
   // neutrino px and py
-  logprob += log(fResMET->p(nu_fit_px, ETmiss_x, &TFgoodTmp, SumET));
+  logprob += log(fResMET->p(nu_fit_px, m_et_miss_x, &TFgoodTmp, m_et_miss_sum));
   if (!TFgoodTmp) m_TFs_are_good = false;
-  logprob += log(fResMET->p(nu_fit_py, ETmiss_y, &TFgoodTmp, SumET));
+  logprob += log(fResMET->p(nu_fit_py, m_et_miss_y, &TFgoodTmp, m_et_miss_sum));
   if (!TFgoodTmp) m_TFs_are_good = false;
 
   // physics constants
@@ -416,8 +416,8 @@ std::vector<double> KLFitter::LikelihoodSgTopWtLJ::GetInitialParameters() {
   values[parLepE] = lep_meas_e;
 
   // missing px and py
-  values[parNuPx] = ETmiss_x;
-  values[parNuPy] = ETmiss_y;
+  values[parNuPx] = m_et_miss_x;
+  values[parNuPy] = m_et_miss_y;
 
   // pz of the neutrino
   values[parNuPz] = 0;
@@ -452,7 +452,7 @@ std::vector<double> KLFitter::LikelihoodSgTopWtLJ::GetInitialParameters() {
     TLorentzVector* lepton = GetLepton(*m_particles_permuted);
     KLFitter::PhysicsConstants constants;
     double mW = constants.MassW();
-    double cosDeltaPhi = (lepton->Px()*ETmiss_x + lepton->Py()*ETmiss_y) / (lepton->Perp() * sqrt(ETmiss_x * ETmiss_x + ETmiss_y * ETmiss_y));
+    double cosDeltaPhi = (lepton->Px()*m_et_miss_x + lepton->Py()*m_et_miss_y) / (lepton->Perp() * sqrt(m_et_miss_x * m_et_miss_x + m_et_miss_y * m_et_miss_y));
     values[parNuPz] = mW * mW * lepton->Pz() / (2 * lepton->Perp2()*(1 - cosDeltaPhi));
     if (fHadronicTop)
       SetParameterRange(parNuPz, values[parNuPz], values[parNuPz]);
@@ -477,8 +477,8 @@ std::vector<double> KLFitter::LikelihoodSgTopWtLJ::GetNeutrinoPzSolutions() {
   double pz_c = lepton->Pz();
   double Ec = lepton->E();
 
-  double px_nu = ETmiss_x;
-  double py_nu = ETmiss_y;
+  double px_nu = m_et_miss_x;
+  double py_nu = m_et_miss_y;
   double alpha = constants.MassW()*constants.MassW() - mE*mE + 2*(px_c*px_nu + py_c*py_nu);
 
   double a = pz_c*pz_c - Ec*Ec;
@@ -529,7 +529,7 @@ int KLFitter::LikelihoodSgTopWtLJ::SavePermutedParticles() {
   lq2_meas_p      = sqrt(lq2_meas_e*lq2_meas_e - lq2_meas_m*lq2_meas_m);
 
   TLorentzVector * lepton(0);
-  if (fTypeLepton == kElectron) {
+  if (m_lepton_type == kElectron) {
     lepton = (*m_particles_permuted)->GetP4(Particles::Type::kElectron, 0);
     lep_meas_deteta = (*m_particles_permuted)->electrons.at(0).GetDetEta();
   } else {
@@ -552,9 +552,9 @@ int KLFitter::LikelihoodSgTopWtLJ::SaveResolutionFunctions() {
   fResEnergyB = (*m_detector)->ResEnergyBJet(b_meas_deteta);
   fResEnergyLQ1  = (*m_detector)->ResEnergyLightJet(lq1_meas_deteta);
   fResEnergyLQ2  = (*m_detector)->ResEnergyLightJet(lq2_meas_deteta);
-  if (fTypeLepton == kElectron) {
+  if (m_lepton_type == kElectron) {
     fResLepton = (*m_detector)->ResEnergyElectron(lep_meas_deteta);
-  } else if (fTypeLepton == kMuon) {
+  } else if (m_lepton_type == kMuon) {
     fResLepton = (*m_detector)->ResEnergyMuon(lep_meas_deteta);
   }
   fResMET = (*m_detector)->ResMissingET();
