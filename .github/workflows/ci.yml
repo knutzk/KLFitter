@@ -30,7 +30,7 @@ jobs:
       if: matrix.build-type == 'manual-bat'
       run: |
         mkdir KLFitter
-        mv CMakeLists.txt cmake data include src tests util KLFitter/
+        mv CMakeLists.txt cmake data include src tests util external KLFitter/
         echo "KLF_SOURCE_DIR=$GITHUB_WORKSPACE/KLFitter" >> $GITHUB_ENV
         echo "KLF_BUILD_DIR=$GITHUB_WORKSPACE/build" >> $GITHUB_ENV
         echo "BAT_INSTALL_DIR=$GITHUB_WORKSPACE/external/BAT" >> $GITHUB_ENV
@@ -47,7 +47,7 @@ jobs:
         mkdir -p ${{ env.BAT_INSTALL_DIR }}
         wget https://github.com/bat/bat/releases/download/v0.9.4.1/BAT-0.9.4.1.tar.gz
         # Use the provided script to compile BAT
-        /bin/bash ${{ env.KLF_SOURCE_DIR }}/cmake/CompileBAT.sh $GITHUB_WORKSPACE/BAT-0.9.4.1.tar.gz ${{ env.BAT_INSTALL_DIR }}
+        /bin/bash ${{ env.KLF_SOURCE_DIR }}/external/bat/CompileBAT.sh $GITHUB_WORKSPACE/BAT-0.9.4.1.tar.gz ${{ env.BAT_INSTALL_DIR }}
 
     - name: Configure and Build
       run: |

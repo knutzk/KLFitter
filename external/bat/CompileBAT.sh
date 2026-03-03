@@ -30,6 +30,11 @@
 
 set -e
 
+# Support curl if wget is not available
+if ! command -v wget >/dev/null 2>&1; then
+    wget() { curl -L -O "$1"; }
+fi
+
 if [ $# -eq 2 ]
 then
     echo "Extracting BAT from ${1} ..."
@@ -78,6 +83,15 @@ fi
 # Perform the actual configure and make commands.
 tar xzf "$tar_file"
 cd BAT-0.9.4.1
+
+# Apply any patches that are found in the same directory as this script.
+for p in $(dirname "$0")/*.patch; do
+    if [ -f "$p" ]; then
+        echo "Applying patch: $p"
+        patch -p1 < "$p"
+    fi
+done
+
 ./configure --with-rootsys=`root-config --prefix` --prefix=$target_dir --enable-silent-rules
 make -j LIBTOOLFLAGS=--silent || make -j LIBTOOLFLAGS=--silent || make -j LIBTOOLFLAGS=--silent
 
