@@ -16,8 +16,6 @@
 # along with KLFitter. If not, see <http://www.gnu.org/licenses/>.
 #
 
-@PACKAGE_INIT@
-
 # Find the required dependencies.
 include( CMakeFindDependencyMacro )
 find_dependency( ROOT 5.34.10 )
@@ -27,7 +25,10 @@ find_dependency( BAT 0.9.4.1 )
 include( "${CMAKE_CURRENT_LIST_DIR}/KLFitterTargets.cmake" )
 
 # Set some "old style" variables for using the KLFitter installation.
-set( KLFitter_INCLUDE_DIRS "${PACKAGE_PREFIX_DIR}/include" )
+get_filename_component( KLFitter_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/../../../include" ABSOLUTE )
 set( KLFitter_LIBRARIES KLFitter::KLFitter )
 
-check_required_components( KLFitter )
+# Tell the user what happened.
+if( NOT KLFitter_FIND_QUIETLY )
+   message( STATUS "Found KLFitter (version: @PROJECT_VERSION@)" )
+endif()

@@ -1,4 +1,4 @@
-# Copyright (c) 2009--2021, the KLFitter developer team
+# Copyright (c) 2009--2026, the KLFitter developer team
 #
 # This file is part of KLFitter.
 #
@@ -20,9 +20,6 @@ cmake_minimum_required( VERSION 3.10 )
 
 # Set the project's name and version.
 project( KLFitter VERSION 1.3.2 )
-
-# Load modern CMake package helpers.
-include( CMakePackageConfigHelpers )
 
 # Enable using CTest in the project.
 include( CTest )
@@ -229,18 +226,14 @@ install( EXPORT KLFitterTargets
    NAMESPACE "KLFitter::" )
 
 # Create a version file for the project.
-write_basic_package_config_version_file(
-   "${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfigVersion.cmake"
-   VERSION ${PROJECT_VERSION}
-   COMPATIBILITY SameMajorVersion )
+configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/KLFitterConfigVersion.cmake.in"
+   "${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfigVersion.cmake" @ONLY )
 
 # Create and install the main KLFitterConfig.cmake file.
-configure_package_config_file(
-   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/KLFitterConfig.cmake.in
-   ${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfig.cmake
-   INSTALL_DESTINATION lib/cmake/KLFitter )
+configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/KLFitterConfig.cmake.in"
+   "${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfig.cmake" @ONLY )
 
 install( FILES
-   ${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfig.cmake
-   ${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfigVersion.cmake
+   "${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfig.cmake"
+   "${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfigVersion.cmake"
    DESTINATION lib/cmake/KLFitter )
