@@ -221,8 +221,8 @@ endif()
 
 # Install the CMake description of the project.
 install( EXPORT KLFitterTargets
-   FILE KLFitterConfig-targets.cmake
-   DESTINATION cmake
+   FILE KLFitterTargets.cmake
+   DESTINATION lib/cmake/KLFitter
    NAMESPACE "KLFitter::" )
 
 # Create a version file for the project.
@@ -236,9 +236,9 @@ write_basic_package_config_version_file(
 configure_package_config_file(
    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/KLFitterConfig.cmake.in
    ${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfig.cmake
-   INSTALL_DESTINATION cmake )
+   INSTALL_DESTINATION lib/cmake/KLFitter )
 
 install( FILES
    ${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfig.cmake
    ${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfigVersion.cmake
-   DESTINATION cmake )
+   DESTINATION lib/cmake/KLFitter )
