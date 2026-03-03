@@ -16,12 +16,7 @@
 # along with KLFitter. If not, see <http://www.gnu.org/licenses/>.
 
 # Set the minimum CMake version required to build the project.
-cmake_minimum_required( VERSION 3.1 )
-
-# Silence some warnings on macOS with new CMake versions.
-if( NOT ${CMAKE_VERSION} VERSION_LESS 3.9 )
-   cmake_policy( SET CMP0068 NEW )
-endif()
+cmake_minimum_required( VERSION 3.10 )
 
 # Set the project's name and version.
 project( KLFitter VERSION 1.3.2 )
@@ -29,7 +24,6 @@ project( KLFitter VERSION 1.3.2 )
 # Enable using CTest in the project.
 include( CTest )
 
-# Set up the "C++ version" to use.
 # Set up the "C++ version" to use.
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 set( CMAKE_CXX_STANDARD 14 )
@@ -232,9 +226,9 @@ install( EXPORT KLFitterTargets
    NAMESPACE "KLFitter::" )
 
 # Create a version file for the project.
-include( CMakePackageConfigHelpers )
+include(CMakePackageConfigHelpers)
 write_basic_package_config_version_file(
-   ${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfigVersion.cmake
+   "${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfigVersion.cmake"
    VERSION ${PROJECT_VERSION}
    COMPATIBILITY SameMajorVersion )
 
