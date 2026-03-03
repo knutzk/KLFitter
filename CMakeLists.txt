@@ -91,6 +91,7 @@ if( BUILTIN_BAT )
 else()
   # Look for BAT on the build system.
   find_package( BAT 0.9.4.1 EXACT REQUIRED )
+  message( STATUS "Found BAT: ${BAT_LIBRARIES} (version ${BAT_VERSION})" )
 endif()
 
 # Public header files for the shared/static library.
