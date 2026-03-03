@@ -66,6 +66,12 @@ jobs:
     - name: Run Unit Tests
       run: |
         cd ${{ env.KLF_BUILD_DIR }}
+        # Set ROOT_INCLUDE_PATH so cling can find BAT headers to avoid autoloading warnings
+        if [ "${{ matrix.build-type }}" = "builtin-bat" ]; then
+          export ROOT_INCLUDE_PATH=${{ env.KLF_INSTALL_DIR }}/include:$ROOT_INCLUDE_PATH
+        else
+          export ROOT_INCLUDE_PATH=${{ env.BAT_INSTALL_DIR }}/include:$ROOT_INCLUDE_PATH
+        fi
         # The test executable is in the build dir, but it links against the library in the install dir via RPATH
         ./test-bin/test-ljets-lh.exe ${{ env.KLF_SOURCE_DIR }} 2>&1 | tee test-output.txt
 
