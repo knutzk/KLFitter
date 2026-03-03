@@ -37,6 +37,11 @@ set( CMAKE_CXX_STANDARD 14 CACHE STRING
 set( CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL
    "(Dis)allow using compiler extensions" )
 
+# Default to building shared libraries.
+if( NOT DEFINED BUILD_SHARED_LIBS )
+   set( BUILD_SHARED_LIBS ON )
+endif()
+
 # If the user didn't request a build type explicitly, use an optimised
 # build with debug symbols.
 if( "${CMAKE_BUILD_TYPE}" STREQUAL "" )
@@ -47,10 +52,13 @@ message( STATUS "Using build type: ${CMAKE_BUILD_TYPE}" )
 # Set the warning flag(s) to use.
 set( CMAKE_CXX_FLAGS "-Wall -pedantic" )
 
-# Turn off the usage of RPATH completely:
-set( CMAKE_SKIP_RPATH ON )
-set( CMAKE_SKIP_BUILD_RPATH ON )
-set( CMAKE_SKIP_INSTALL_RPATH ON )
+# Set up RPATH so that executables find the library automatically.
+set( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib" )
+set( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
+list( FIND CMAKE_PLATFORM_STAGED_RUNTIME_LIBS "${CMAKE_INSTALL_PREFIX}/lib" _isSystem )
+if( _isSystem STREQUAL "-1" )
+   set( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib" )
+endif()
 
 # Set the location of the built libraries/executables inside the build
 # directory.
@@ -160,8 +168,9 @@ set( lib_sources
   src/ResSingleGaussPt.cxx
   src/ResolutionBase.cxx )
 
-# Build the shared library.
-add_library( KLFitter SHARED ${lib_headers} ${lib_sources} )
+# Build the library.
+add_library( KLFitter ${lib_headers} ${lib_sources} )
+add_library( KLFitter::KLFitter ALIAS KLFitter )
 target_include_directories( KLFitter
    PUBLIC ${ROOT_INCLUDE_DIRS} ${BAT_INCLUDE_DIR}
    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include> )
@@ -172,20 +181,8 @@ if( BUILTIN_BAT )
   add_dependencies( KLFitter BAT )
 endif()
 
-# Build the static library.
-add_library( KLFitter-stat ${lib_headers} ${lib_sources} )
-target_include_directories( KLFitter-stat
-   PUBLIC ${ROOT_INCLUDE_DIRS} ${BAT_INCLUDE_DIR}
-   $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include> )
-target_link_libraries( KLFitter-stat ${ROOT_LIBRARIES} ${BAT_LIBRARY} )
-set_property( TARGET KLFitter-stat
-   PROPERTY PUBLIC_HEADER ${lib_headers} )
-if( BUILTIN_BAT )
-  add_dependencies( KLFitter-stat BAT )
-endif()
-
-# Install the libraries.
-install( TARGETS KLFitter KLFitter-stat
+# Install the library.
+install( TARGETS KLFitter
    EXPORT KLFitterTargets
    ARCHIVE DESTINATION lib
    LIBRARY DESTINATION lib
@@ -199,7 +196,7 @@ install( DIRECTORY data/transferfunctions/
 macro( KLFitter_add_test name )
    # Build the unit-test executable:
    add_executable( ${name} ${ARGN} )
-   target_link_libraries( ${name} KLFitter-stat )
+   target_link_libraries( ${name} KLFitter )
    set_target_properties( ${name} PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test-bin" )
    # Set up the test itself:
@@ -217,7 +214,7 @@ endif()
 # Helper macro for building the project's executables.
 macro( KLFitter_add_executable name )
   add_executable( ${name} ${ARGN} )
-  target_link_libraries( ${name} KLFitter-stat )
+  target_link_libraries( ${name} KLFitter )
   install( TARGETS ${name}
     EXPORT KLFitterTargets
     RUNTIME DESTINATION bin )

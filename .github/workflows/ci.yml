@@ -64,12 +64,8 @@ jobs:
     - name: Run Unit Tests
       run: |
         cd ${{ env.KLF_BUILD_DIR }}
-        # Add BAT and KLFitter libraries to LD_LIBRARY_PATH
-        if [ "${{ matrix.build-type }}" = "builtin-bat" ]; then
-          export LD_LIBRARY_PATH=${{ env.KLF_BUILD_DIR }}/lib:$LD_LIBRARY_PATH
-        else
-          # ROOT/Cling often needs the include path in LD_LIBRARY_PATH or ROOT_INCLUDE_PATH to avoid autoloading warnings
-          export LD_LIBRARY_PATH=${{ env.BAT_INSTALL_DIR }}/lib:${{ env.BAT_INSTALL_DIR }}/include:${{ env.KLF_BUILD_DIR }}/lib:$LD_LIBRARY_PATH
+        # ROOT/Cling still needs the include path in ROOT_INCLUDE_PATH to avoid autoloading warnings in manual-bat
+        if [ "${{ matrix.build-type }}" = "manual-bat" ]; then
           export ROOT_INCLUDE_PATH=${{ env.BAT_INSTALL_DIR }}/include:$ROOT_INCLUDE_PATH
         fi
         # The test executable needs the source dir for reference data
