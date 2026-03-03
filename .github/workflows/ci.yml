@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         apt-get update
-        apt-get install -y doxygen cmake wget
+        apt-get install -y doxygen cmake wget patch build-essential
 
     - name: Setup Subdirectory Build (for manual-bat)
       if: matrix.build-type == 'manual-bat'
@@ -53,7 +53,7 @@ jobs:
       run: |
         mkdir -p ${{ env.KLF_BUILD_DIR }}
         cd ${{ env.KLF_BUILD_DIR }}
-        if [ "${{ matrix.build-type }}" == "builtin-bat" ]; then
+        if [ "${{ matrix.build-type }}" = "builtin-bat" ]; then
           cmake -DBUILTIN_BAT=TRUE -DINSTALL_TESTS=TRUE ${{ env.KLF_SOURCE_DIR }}
         else
           export BATINSTALLDIR=${{ env.BAT_INSTALL_DIR }}

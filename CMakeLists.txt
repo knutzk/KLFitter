@@ -67,6 +67,7 @@ find_package( ROOT 5.34.10 REQUIRED MathCore Minuit )
 # Figure out what to do with BAT.
 set( _buildDir ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/BATBuild )
 option( BUILTIN_BAT "Acquire BAT as part of building this project" OFF )
+message( STATUS "BUILTIN_BAT is set to: ${BUILTIN_BAT}" )
 if( BUILTIN_BAT )
   # Download and install BAT using ExternalProject.
   include( ExternalProject )
