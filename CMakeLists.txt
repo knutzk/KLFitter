@@ -21,6 +21,9 @@ cmake_minimum_required( VERSION 3.10 )
 # Set the project's name and version.
 project( KLFitter VERSION 1.3.2 )
 
+# Load modern CMake package helpers.
+include( CMakePackageConfigHelpers )
+
 # Enable using CTest in the project.
 include( CTest )
 
@@ -226,7 +229,6 @@ install( EXPORT KLFitterTargets
    NAMESPACE "KLFitter::" )
 
 # Create a version file for the project.
-include(CMakePackageConfigHelpers)
 write_basic_package_config_version_file(
    "${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfigVersion.cmake"
    VERSION ${PROJECT_VERSION}
