@@ -85,12 +85,7 @@ tar xzf "$tar_file"
 cd BAT-0.9.4.1
 
 # Apply any patches that are found in the same directory as this script.
-for p in $(dirname "$0")/*.patch; do
-    if [ -f "$p" ]; then
-        echo "Applying patch: $p"
-        patch -p1 < "$p"
-    fi
-done
+/bin/bash "$(dirname "$0")/patch_bat.sh" "$PWD" "$(dirname "$0")"
 
 ./configure --with-rootsys=`root-config --prefix` --prefix=$target_dir --enable-silent-rules
 make -j LIBTOOLFLAGS=--silent || make -j LIBTOOLFLAGS=--silent || make -j LIBTOOLFLAGS=--silent

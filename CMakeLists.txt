@@ -76,7 +76,7 @@ if( BUILTIN_BAT )
     INSTALL_DIR ${CMAKE_BINARY_DIR}
     URL "https://github.com/bat/bat/releases/download/v0.9.4.1/BAT-0.9.4.1.tar.gz"
     URL_HASH SHA256=D46C6F834CB5888BBF4DB393887190380132FA48816E0804F79C4A3CC344EF87
-    PATCH_COMMAND /bin/bash -c "for p in ${CMAKE_SOURCE_DIR}/external/bat/*.patch; do patch -p1 < \${p}; done"
+    PATCH_COMMAND /bin/bash ${CMAKE_SOURCE_DIR}/external/bat/patch_bat.sh <SOURCE_DIR> ${CMAKE_SOURCE_DIR}/external/bat
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND <SOURCE_DIR>/configure --with-rootsys=${ROOTSYS} --prefix=${_buildDir} --enable-silent-rules
     BUILD_COMMAND make LIBTOOLFLAGS=--silent
