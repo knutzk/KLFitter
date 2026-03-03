@@ -73,19 +73,16 @@ if( BUILTIN_BAT )
   include( ExternalProject )
   ExternalProject_Add( BAT
     PREFIX ${CMAKE_BINARY_DIR}/externals
-    INSTALL_DIR ${CMAKE_BINARY_DIR}
     URL "https://github.com/bat/bat/releases/download/v0.9.4.1/BAT-0.9.4.1.tar.gz"
     URL_HASH SHA256=D46C6F834CB5888BBF4DB393887190380132FA48816E0804F79C4A3CC344EF87
     PATCH_COMMAND /bin/bash ${CMAKE_SOURCE_DIR}/external/bat/patch_bat.sh <SOURCE_DIR> ${CMAKE_SOURCE_DIR}/external/bat
     BUILD_IN_SOURCE 1
-    CONFIGURE_COMMAND <SOURCE_DIR>/configure --with-rootsys=${ROOTSYS} --prefix=${_buildDir} --enable-silent-rules
+    CONFIGURE_COMMAND <SOURCE_DIR>/configure --with-rootsys=${ROOTSYS} --prefix=${CMAKE_INSTALL_PREFIX} --enable-silent-rules
     BUILD_COMMAND make LIBTOOLFLAGS=--silent
-    INSTALL_COMMAND make install LIBTOOLFLAGS=--silent
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${_buildDir}/ <INSTALL_DIR> )
-  # Set the include and library paths to use.
-  set( BAT_ROOT $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}> )
-  set( BAT_INCLUDE_DIR ${BAT_ROOT}/include )
-  set( BAT_LIBRARY ${BAT_ROOT}/lib/libBAT.so )
+    INSTALL_COMMAND make install LIBTOOLFLAGS=--silent )
+  # Set the include and library paths to use for the build.
+  set( BAT_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include )
+  set( BAT_LIBRARY ${CMAKE_INSTALL_PREFIX}/lib/libBAT.so )
   # Tell the user what will happen.
   message( STATUS "Using a privately downloaded BAT version for the build" )
 else()
