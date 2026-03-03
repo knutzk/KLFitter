@@ -24,18 +24,16 @@ if( NOT ${CMAKE_VERSION} VERSION_LESS 3.9 )
 endif()
 
 # Set the project's name and version.
-project( KLFitter )
+project( KLFitter VERSION 1.3.2 )
 
 # Enable using CTest in the project.
 include( CTest )
 
 # Set up the "C++ version" to use.
-set( CMAKE_CXX_STANDARD_REQUIRED 11 CACHE STRING
-   "Minimum C++ standard required for the build" )
-set( CMAKE_CXX_STANDARD 14 CACHE STRING
-   "C++ standard to use for the build" )
-set( CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL
-   "(Dis)allow using compiler extensions" )
+# Set up the "C++ version" to use.
+set( CMAKE_CXX_STANDARD_REQUIRED ON )
+set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_EXTENSIONS FALSE )
 
 # Default to building shared libraries.
 if( NOT DEFINED BUILD_SHARED_LIBS )
@@ -171,6 +169,7 @@ set( lib_sources
 # Build the library.
 add_library( KLFitter ${lib_headers} ${lib_sources} )
 add_library( KLFitter::KLFitter ALIAS KLFitter )
+target_compile_features( KLFitter PUBLIC cxx_std_14 )
 target_include_directories( KLFitter
    PUBLIC ${ROOT_INCLUDE_DIRS} ${BAT_INCLUDE_DIR}
    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include> )
@@ -231,3 +230,21 @@ install( EXPORT KLFitterTargets
    FILE KLFitterConfig-targets.cmake
    DESTINATION cmake
    NAMESPACE "KLFitter::" )
+
+# Create a version file for the project.
+include( CMakePackageConfigHelpers )
+write_basic_package_config_version_file(
+   ${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfigVersion.cmake
+   VERSION ${PROJECT_VERSION}
+   COMPATIBILITY SameMajorVersion )
+
+# Create and install the main KLFitterConfig.cmake file.
+configure_package_config_file(
+   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/KLFitterConfig.cmake.in
+   ${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfig.cmake
+   INSTALL_DESTINATION cmake )
+
+install( FILES
+   ${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfig.cmake
+   ${CMAKE_CURRENT_BINARY_DIR}/KLFitterConfigVersion.cmake
+   DESTINATION cmake )

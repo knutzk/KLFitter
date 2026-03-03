@@ -1,4 +1,4 @@
-# Copyright (c) 2009--2018, the KLFitter developer team
+# Copyright (c) 2009--2026, the KLFitter developer team
 #
 # This file is part of KLFitter.
 #
@@ -15,30 +15,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with KLFitter. If not, see <http://www.gnu.org/licenses/>.
 #
-# ==========================================================
-#
-# Configuration file allowing clients to build code against the KLFitter
-# library/libraries.
-#
 
-# Figure out the root directory of the installation.
-get_filename_component( _thisdir "${CMAKE_CURRENT_LIST_FILE}" PATH )
-get_filename_component( _basedir "${_thisdir}" PATH )
-get_filename_component( KLFitter_INSTALL_DIR "${_basedir}" ABSOLUTE CACHE )
+@PACKAGE_INIT@
 
 # Tell the user what happened.
 if( NOT KLFitter_FIND_QUIETLY )
-   message( STATUS
-      "Found KLFitter: ${KLFitter_INSTALL_DIR} (version: ${KLFitter_VERSION})" )
+   message( STATUS "Found KLFitter: ${PACKAGE_PREFIX_DIR} (version: ${KLFitter_VERSION})" )
 endif()
 
-# Include the "targets file".
-# include( ${_thisdir}/KLFitterConfig-targets.cmake )
+# Include the targets file.
+include( "${CMAKE_CURRENT_LIST_DIR}/KLFitterConfig-targets.cmake" )
 
 # Set some "old style" variables for using the KLFitter installation.
-set( KLFitter_INCLUDE_DIRS "${KLFitter_INSTALL_DIR}/include" )
+set( KLFitter_INCLUDE_DIRS "${PACKAGE_PREFIX_DIR}/include" )
 set( KLFitter_LIBRARIES KLFitter::KLFitter )
 
-# Clean up.
-unset( _thisdir )
-unset( _basedir )
+check_required_components( KLFitter )

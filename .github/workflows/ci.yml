@@ -33,6 +33,7 @@ jobs:
         mv CMakeLists.txt cmake data include src tests util external KLFitter/
         echo "KLF_SOURCE_DIR=$GITHUB_WORKSPACE/KLFitter" >> $GITHUB_ENV
         echo "KLF_BUILD_DIR=$GITHUB_WORKSPACE/build" >> $GITHUB_ENV
+        echo "KLF_INSTALL_DIR=$GITHUB_WORKSPACE/install" >> $GITHUB_ENV
         echo "BAT_INSTALL_DIR=/usr/local" >> $GITHUB_ENV
 
     - name: Setup Standard Build Env (for builtin-bat)
@@ -40,6 +41,7 @@ jobs:
       run: |
         echo "KLF_SOURCE_DIR=$GITHUB_WORKSPACE" >> $GITHUB_ENV
         echo "KLF_BUILD_DIR=$GITHUB_WORKSPACE/build" >> $GITHUB_ENV
+        echo "KLF_INSTALL_DIR=$GITHUB_WORKSPACE/install" >> $GITHUB_ENV
 
     - name: Manual BAT Installation
       if: matrix.build-type == 'manual-bat'
@@ -54,17 +56,22 @@ jobs:
         mkdir -p ${{ env.KLF_BUILD_DIR }}
         cd ${{ env.KLF_BUILD_DIR }}
         if [ "${{ matrix.build-type }}" = "builtin-bat" ]; then
-          cmake -DBUILTIN_BAT:BOOL=TRUE -DINSTALL_TESTS:BOOL=TRUE ${{ env.KLF_SOURCE_DIR }}
+          cmake -DCMAKE_INSTALL_PREFIX=${{ env.KLF_INSTALL_DIR }} -DBUILTIN_BAT:BOOL=TRUE -DINSTALL_TESTS:BOOL=TRUE ${{ env.KLF_SOURCE_DIR }}
         else
-          cmake -DBUILTIN_BAT:BOOL=FALSE -DINSTALL_TESTS:BOOL=TRUE ${{ env.KLF_SOURCE_DIR }}
+          cmake -DCMAKE_INSTALL_PREFIX=${{ env.KLF_INSTALL_DIR }} -DBUILTIN_BAT:BOOL=FALSE -DINSTALL_TESTS:BOOL=TRUE ${{ env.KLF_SOURCE_DIR }}
         fi
         make -j$(nproc)
+        make install
 
     - name: Run Unit Tests
       run: |
         cd ${{ env.KLF_BUILD_DIR }}
-        # The test executable needs the source dir for reference data
+        # The test executable is in the build dir, but it links against the library in the install dir via RPATH
         ./test-bin/test-ljets-lh.exe ${{ env.KLF_SOURCE_DIR }} 2>&1 | tee test-output.txt
+
+    - name: Verify Installation (Example Run)
+      run: |
+        ${{ env.KLF_INSTALL_DIR }}/bin/example-top-ljets.exe ${{ env.KLF_SOURCE_DIR }}
 
     - name: Verify Test Output
       run: |
